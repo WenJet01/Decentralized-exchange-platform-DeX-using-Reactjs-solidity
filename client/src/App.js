@@ -10,7 +10,7 @@ import { MdSwapVert } from "react-icons/md";
 
 import "./App.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { isNumber } from "test/utils";
+
 //@import url('https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css');
 
 
