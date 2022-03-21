@@ -51,13 +51,13 @@ class App extends Component {
     }
 
 
-     await this.getSbTokenContract();
+    await this.getSbTokenContract();
 
-     await this.getPoolContract();
+    await this.getPoolContract();
 
     // await this.getPoolSupply();
 
-     await this.checkPoolRunning();
+    await this.checkPoolRunning();
 
 
     //await this.runSimpleStorage();
@@ -179,7 +179,7 @@ class App extends Component {
     //await poolContract.methods.settingUpEth().send({value:this.tokenToWei('1'), from:accounts[0]})
     await poolContract.methods.settingUp(this.tokenToWei(this.state.setUpSbt.toString())).send({ value: this.tokenToWei(this.state.setUpEth.toString()), from: accounts[0] }).on('transactionHash', function () { });
     await sbTokenContract.methods.transfer(poolContract.options.address, this.tokenToWei(this.state.setUpSbt.toString())).send({ from: accounts[0] });
-    
+
 
 
 
@@ -240,24 +240,34 @@ class App extends Component {
           </div>
 
           {this.state.poolRunning ?
-           <button class="btn btn-primary disabled" style={{ width: "80%", marginBottom: 15 }}>
-           Pool Is Running
-         </button>
-          :
-
-          (this.state.setUpSbt / this.state.setUpEth) > 0 && (this.state.setUpSbt / this.state.setUpEth) < Infinity ?
-            <button class="btn btn-primary" style={{ width: "80%", marginBottom: 15 }} onClick={() => this.deployPool()}>
-              Deploy
+            <button class="btn btn-primary disabled" style={{ width: "80%", marginBottom: 15 }}>
+              Pool Is Running
             </button>
             :
-            <button class="btn btn-primary disabled" style={{ width: "80%", marginBottom: 15 }}>
-              Deploy
-            </button>
-          
-        
+
+            (this.state.setUpSbt / this.state.setUpEth) > 0 && (this.state.setUpSbt / this.state.setUpEth) < Infinity ?
+              <button class="btn btn-primary" style={{ width: "80%", marginBottom: 15 }} onClick={() => this.deployPool()}>
+                Deploy
+              </button>
+              :
+              <button class="btn btn-primary disabled" style={{ width: "80%", marginBottom: 15 }}>
+                Deploy
+              </button>
+
+
           }
 
-          
+          <div style={{ width: "80%", margin: "auto",  display: "flex",  }}>
+            <div style={{ flex: 1, }}>
+              ETH Balance : {this.state.poolEthBalance}
+            </div>
+            <div style={{ flex: 1, }}>
+              SBT Balance : {this.state.poolSbtBalance}            
+            </div>
+
+          </div>
+
+
 
           {/* <div>The ETH balance is: {this.state.setUpEth}</div>
           <div>The SBT balance is: {this.state.setUpSbt}</div> */}
