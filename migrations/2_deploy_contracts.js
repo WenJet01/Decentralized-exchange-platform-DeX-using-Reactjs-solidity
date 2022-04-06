@@ -4,9 +4,10 @@ var pool = artifacts.require("./pool.sol");
 var LpToken = artifacts.require("./LpToken.sol");
 
 
-module.exports = function(deployer) {
-  deployer.deploy(SbToken);
-  deployer.deploy(SimpleStorage);
-  deployer.deploy(pool,SbToken.address);
-  deployer.deploy(LpToken);
+module.exports = async function(deployer) {
+  await deployer.deploy(SbToken);
+  const token = await SbToken.deployed();
+  await deployer.deploy(SimpleStorage);
+  await deployer.deploy(pool,token.address);
+  await deployer.deploy(LpToken);
 };
