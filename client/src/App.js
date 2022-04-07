@@ -3,11 +3,13 @@ import SimpleStorageContract from "./contracts/SimpleStorage.json";
 import SbToken from "./contracts/SbToken.json"
 import pool from "./contracts/pool.json"
 import getWeb3 from "./getWeb3";
+import swap from "./contracts/swap.json"
 
 import IoIosSwap from "react-icons/io";
 import { TiSpanner } from "react-icons/ti";
 import { MdSwapVert } from "react-icons/md";
-
+import { IoSwapHorizontalOutline } from "react-icons/io5";
+import { AiOutlineArrowDown } from "react-icons/ai";
 import "./App.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -28,7 +30,12 @@ class App extends Component {
     setUpSbt: null,
     ratioEthToSbt: 0,
     ratioSbtToEth: 0,
-    poolRunning: false
+    poolRunning: false,
+    ethValue: null,
+    sbtValue: null,
+    ethToSbt: true,
+    ratioEth: null,
+    ratioSbt: null
   };
 
   componentDidMount = async () => {
@@ -59,9 +66,11 @@ class App extends Component {
 
     await this.checkPoolRunning();
 
+    await this.getSwapContract();
 
     //await this.runSimpleStorage();
 
+    await this.calculateRatio();
 
   };
 
@@ -166,6 +175,29 @@ class App extends Component {
     }
   }
 
+  //get swap contract
+  getSwapContract = async () => {
+
+    try {
+      // Get the contract instance.
+      const networkId = await this.state.web3.eth.net.getId();
+      const deployedNetwork = swap.networks[networkId];
+      const instance = new this.state.web3.eth.Contract(
+        swap.abi,
+        deployedNetwork && deployedNetwork.address,
+      );
+
+      // Set contract to the state
+      this.setState({ swapContract: instance });
+    } catch (error) {
+      // Catch any errors for any of the above operations.
+      alert(
+        `Failed to load swap contract or web3 or accounts. Check console for details.`,
+      );
+      console.error(error);
+    }
+  }
+
 
 
   deployPool = async () => {
@@ -200,6 +232,39 @@ class App extends Component {
   }
 
 
+  estimateSbt = async () => {
+    //console.log(await this.state.swapContract.methods.totalTokenEth().call());
+    const sbtEstimate = await this.state.swapContract.methods.getSwapTokenSbEstimate(this.tokenToWei(this.state.ethValue.toString())).call()
+  
+    this.setState({ sbtValue: this.weiToToken(sbtEstimate) });
+
+  }
+
+  estimateEth = async () => {
+  
+    //console.log(await this.state.swapContract.methods.totalTokenEth().call());
+    const ethEstimate = await this.state.swapContract.methods.getSwapTokenEthEstimate(this.tokenToWei(this.state.sbtValue.toString())).call()
+
+    this.setState({ ethValue: this.weiToToken(ethEstimate) });
+
+  }
+
+  calculateRatio = async () => {
+    const ratioEth = await this.state.swapContract.methods.getSwapTokenSbEstimate(this.tokenToWei("1")).call()
+    const ratioSbt = await this.state.swapContract.methods.getSwapTokenEthEstimate(this.tokenToWei("1")).call()
+
+    this.setState({
+      ratioEth: this.weiToToken(ratioEth),
+      ratioSbt: this.weiToToken(ratioSbt)
+    })
+  }
+
+  swap = async () => {
+    //console.log('hi');
+    await this.state.swapContract.methods.tokenEthSwapTokenSb().send({from: this.state.accounts[0], value: this.tokenToWei(this.state.ethValue) });
+    //
+    console.log(await this.state.swapContract.methods.functionCalled().call());
+  }
 
   render() {
     if (!this.state.web3) {
@@ -257,12 +322,12 @@ class App extends Component {
 
           }
 
-          <div style={{ width: "80%", margin: "auto",  display: "flex",  }}>
+          <div style={{ width: "80%", margin: "auto", display: "flex", }}>
             <div style={{ flex: 1, }}>
               ETH Balance : {this.state.poolEthBalance}
             </div>
             <div style={{ flex: 1, }}>
-              SBT Balance : {this.state.poolSbtBalance}            
+              SBT Balance : {this.state.poolSbtBalance}
             </div>
 
           </div>
@@ -271,6 +336,80 @@ class App extends Component {
 
           {/* <div>The ETH balance is: {this.state.setUpEth}</div>
           <div>The SBT balance is: {this.state.setUpSbt}</div> */}
+        </div>
+
+
+        <div className="divBox">
+          <h3> <IoSwapHorizontalOutline style={{ fontSize: 40, marginTop: -5, marginRight: 20, transform: "scaleX(-1)" }} />Swap</h3>
+
+          <div class="swapbox">
+            <div class="swapbox_select" style={{ marginRight: 20 }}>
+              {
+                (this.state.ethToSbt) ? <text>ETH</text>
+                  :
+                  <text>SBT</text>
+              }
+
+            </div>
+
+            <input
+              type="number" class="form-control" placeholder=" Amount" id="input1" step="0.00001" min="0.0001" style={{ width: "80%" }}
+              onChange={(e) => {
+                {
+                  (this.state.ethToSbt) ?
+                    this.setState({ ethValue: e.target.value }, () => { if (this.state.ethValue != 0) { this.estimateSbt() } })
+                    :
+                    this.setState({ sbtValue: e.target.value }, () => { if (this.state.sbtValue != 0) { this.estimateEth() } })
+                }
+
+              }
+              }></input>
+          </div>
+
+          <div>
+            <button class="buttonChange" onClick={(e) => {
+              this.setState({ ethToSbt: !this.state.ethToSbt },
+                () => {
+                  this.setState({ ethValue: "", sbtValue: "" },
+                )
+                })
+            }}><AiOutlineArrowDown></AiOutlineArrowDown></button>
+          </div>
+
+          <div class="swapbox">
+            <div class="swapbox_select" style={{ marginRight: 20 }}>
+              {
+                (this.state.ethToSbt) ? <text>SBT</text>
+                  :
+                  <text>ETH</text>
+              }
+
+            </div>
+            <input
+              value={
+                (this.state.ethToSbt) ?
+                  this.state.sbtValue
+                  : this.state.ethValue
+              } type="number" class="form-control" placeholder=" Amount" step="0.00001" min="0.0001" style={{ width: "80%" }}></input>
+          </div>
+
+          <div style={{ margin: 10, float: "left" }}>
+            <span>1 ETH : {this.state.ratioEth} SBT</span>
+          </div>
+          <div>
+            <button onClick={() => this.swap()} style={(this.state.poolRunning) ?
+              { width: "100%", backgroundColor: "#d65479", border: 0 }
+              : { width: "100%", backgroundColor: "grey", border: 0 }}>
+              {
+                (this.state.poolRunning) ?
+                  <text>Swap</text>
+                  :
+                  <text>No Pool Created</text>
+              }
+            </button>
+
+          </div>
+
         </div>
 
       </div>

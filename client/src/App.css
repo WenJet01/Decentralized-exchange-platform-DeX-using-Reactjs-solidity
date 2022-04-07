@@ -45,3 +45,31 @@
   border-radius: 5px;
   box-shadow: lightgray 3px 3px 5px;
 }
+
+
+.swapbox{
+  overflow: auto;
+  margin: 0px 0;
+  padding: 20px;
+  background-color: #e9b8b8;
+  border-radius: 20px;
+  align-content: center;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+}
+
+.buttonChange{
+  border: 1;
+  border-radius: 20px;
+  border-color: pink;
+  background: whitesmoke;
+  margin: 5px;
+}
+
+.buttonChange:hover{
+  background-color: rgb(248, 221, 226);
+}
+
+
