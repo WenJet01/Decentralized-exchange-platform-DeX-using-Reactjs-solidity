@@ -43,7 +43,9 @@ contract pool {
     function settingUp( uint sbtSupply) public payable onlyOwner{
        
         
-        //sbt.transferFrom(sender,payable (this), sbtSupply);
+        sbt.transferFrom(msg.sender,payable (this), sbtSupply);
+        //payable(address(this)).transfer(msg.value);
+
 
         //require(msg.sender == owner, "Only owner can deploy the pool.");
         sbtBalance += sbtSupply;
