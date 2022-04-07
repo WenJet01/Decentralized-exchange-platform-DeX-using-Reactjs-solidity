@@ -13,7 +13,7 @@ import { AiOutlineArrowDown } from "react-icons/ai";
 import "./App.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-//@import url('https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css');
+
 
 
 
@@ -137,10 +137,12 @@ class App extends Component {
         deployedNetwork && deployedNetwork.address,
       );
 
+      const sbtBalance = await instance.methods.getBalanceSbt().call();
+      const ethBalance = await instance.methods.getBalanceEth().call();
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({ poolContract: instance });
+      this.setState({ poolContract: instance ,poolSbtBalance:this.weiToToken(sbtBalance), poolEthBalance:this.weiToToken(ethBalance)});
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -210,7 +212,8 @@ class App extends Component {
     //const allw = await sbTokenContract.methods.allowance(accounts[0],poolContract.options.address).call();
     //await poolContract.methods.settingUpEth().send({value:this.tokenToWei('1'), from:accounts[0]})
     await poolContract.methods.settingUp(this.tokenToWei(this.state.setUpSbt.toString())).send({ value: this.tokenToWei(this.state.setUpEth.toString()), from: accounts[0] }).on('transactionHash', function () { });
-    await sbTokenContract.methods.transfer(poolContract.options.address, this.tokenToWei(this.state.setUpSbt.toString())).send({ from: accounts[0] });
+    //await poolContract.methods.settingUp(this.tokenToWei(this.state.setUpSbt.toString())).send({ value: this.tokenToWei(this.state.setUpEth.toString()), from: accounts[0] }).on('transactionHash', function () { });
+    //await sbTokenContract.methods.transfer(poolContract.options.address, this.tokenToWei(this.state.setUpSbt.toString())).send({ from: accounts[0] });
 
 
 
