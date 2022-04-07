@@ -14,7 +14,6 @@ contract pool {
     uint private sbtReserved = 0; //sbt reserved for liquidity provider reward
     bool public isRunning = false;
 
-
     event PoolInitialised(
         address account,
         address token,
