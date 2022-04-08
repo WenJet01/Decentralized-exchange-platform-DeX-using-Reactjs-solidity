@@ -8,10 +8,9 @@ module.exports = async function(deployer) {
   await deployer.deploy(SbToken);
   const token = await SbToken.deployed();
 
-  await deployer.deploy(SimpleStorage);
-
-  await deployer.deploy(pool,token.address);
-  const Pool = await pool.deployed();
-
   await deployer.deploy(LpToken);
+  const lp = await LpToken.deployed();
+  await deployer.deploy(SimpleStorage);
+  await deployer.deploy(pool,token.address,lp.address);
+  
 };
