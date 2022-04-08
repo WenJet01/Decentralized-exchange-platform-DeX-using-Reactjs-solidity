@@ -66,17 +66,9 @@ contract pool {
         return  (fullSbt * feesRate) / feesDecimal;
     }
 
-    function getBalanceSbt () public view returns(uint){
-        return sbtBalance;
-    }
-
     function getBalanceEth () public view returns(uint){
         return address(this).balance;
     }
-
-    function isPoolRunning () public view returns(bool){
-        return isRunning;
-    }
-    
+  
     
 }
