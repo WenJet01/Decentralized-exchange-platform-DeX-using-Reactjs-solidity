@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import SimpleStorageContract from "./contracts/SimpleStorage.json";
 import SbToken from "./contracts/SbToken.json"
+import LpToken from "./contracts/LpToken.json"
 import pool from "./contracts/pool.json"
 import getWeb3 from "./getWeb3";
 
@@ -31,7 +32,8 @@ class App extends Component {
     setUpSbt: null,
     ratioEthToSbt: 0,
     ratioSbtToEth: 0,
-    poolRunning: false
+    poolRunning: false,
+    lpDetail:{providedEth:0,providedSbt:0,reward:0}
   };
 
   componentDidMount = async () => {
@@ -56,16 +58,19 @@ class App extends Component {
 
     await this.getSbTokenContract();
 
+    await this.getLpTokenContract();
+
     await this.getPoolContract();
 
-    // await this.getPoolSupply();
+    
 
     //await this.checkPoolRunning();
 
 
     //await this.runSimpleStorage();
 
-
+    //detect metamask account change
+    window.ethereum.on('accountsChanged', (accounts) => this.setState({accounts:accounts},()=>this.getLpDetail()));
   };
 
   //convert token to wei
@@ -171,26 +176,54 @@ class App extends Component {
     }
   }
 
+  getLpTokenContract = async () => {
+
+    try {
+      // Get the contract instance.
+      const networkId = await this.state.web3.eth.net.getId();
+      const deployedNetwork = LpToken.networks[networkId];
+      const instance = new this.state.web3.eth.Contract(
+        LpToken.abi,
+        deployedNetwork && deployedNetwork.address,
+      );
+      
+      // Set contract to the state
+      this.setState({ lpTokenContract: instance },()=>this.getLpDetail());
+    } catch (error) {
+      // Catch any errors for any of the above operations.
+      alert(
+        `Failed to load lptoken contract or web3 or accounts. Check console for details.`,
+      );
+      console.error(error);
+    }
+  }
+
+  getLpDetail = async () => {
+    const lp = await this.state.lpTokenContract.methods.get(this.state.accounts[0]).call();
+
+    this.setState({lpDetail : lp});
+  }
+
   
 
   deployPool = async () => {
-    const { accounts, sbTokenContract, poolContract } = this.state;
+   
 
-    if(accounts[0] != await poolContract.methods.owner().call()){
-      alert("Only the owner can deploy the pool.")
-    }
+    // if(this.state.accounts[0] != await this.state.poolContract.methods.owner().call()){
+    //   alert("Only the owner can deploy the pool.")
+    // }
 
     //const response = await contract.methods.balanceOf(accounts[0]).call();
-    await sbTokenContract.methods.approve(poolContract.options.address, this.tokenToWei(this.state.setUpSbt.toString())).send({ from: accounts[0] });
+    await this.state.sbTokenContract.methods.approve(this.state.poolContract.options.address, this.tokenToWei(this.state.setUpSbt.toString())).send({ from: this.state.accounts[0] });
    
-    await poolContract.methods.settingUp(this.tokenToWei(this.state.setUpSbt.toString())).send({ value: this.tokenToWei(this.state.setUpEth.toString()), from: accounts[0] }).on('transactionHash', function () { });
+    await this.state.poolContract.methods.settingUp(this.tokenToWei(this.state.setUpSbt.toString())).send({ value: this.tokenToWei(this.state.setUpEth.toString()), from: this.state.accounts[0] }).on('transactionHash', function () { });
     //await poolContract.methods.settingUp(this.tokenToWei(this.state.setUpSbt.toString())).send({ value: this.tokenToWei(this.state.setUpEth.toString()), from: accounts[0] }).on('transactionHash', function () { });
     //await sbTokenContract.methods.transfer(poolContract.options.address, this.tokenToWei(this.state.setUpSbt.toString())).send({ from: accounts[0] });   
 
     
     
-    const sbtBalance = await poolContract.methods.sbtBalance().call();
-    const ethBalance = await poolContract.methods.getBalanceEth().call();
+    const sbtBalance = await this.state.poolContract.methods.sbtBalance().call();
+    const ethBalance = await this.state.poolContract.methods.getBalanceEth().call();
     //const sbtBalance = '10000';
     //const ethBalance =  '1000000000';
 
@@ -200,7 +233,7 @@ class App extends Component {
   checkPoolRunning = async () => {
     const deployed = await this.state.poolContract.methods.isRunning().call()
 
-    this.setState({ poolRunning: deployed });
+    this.setState({ poolRunning: deployed },()=>this.getLpDetail());
   }
 
 
@@ -326,15 +359,14 @@ class App extends Component {
         {/* withdraw */}
         <div className="divBox">
           <h3><BsBoxArrowDown style={{ fontSize: 38, marginTop: -5}} /> Withdraw</h3>
-          
+          <div>LP details</div>
+          <div>providedEth : {this.weiToToken(this.state.lpDetail.providedEth.toString())}</div>
+          <div>providedSbt : {this.weiToToken(this.state.lpDetail.providedSbt.toString())}</div>          
+          <div>reward : {this.weiToToken(this.state.lpDetail.reward.toString())}</div>
 
-
-          <button class="btn btn-primary" style={{ width: "80%", marginBottom: 15 }} onClick={""}>
+          <button class="btn btn-primary" style={{ width: "80%", marginBottom: 15 ,marginTop:15}} onClick={""}>
             Withdraw
           </button>
-
-
-          
 
         </div>
 
