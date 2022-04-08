@@ -6,6 +6,7 @@ import "./LpToken.sol";
 
 contract pool {
     SbToken public sbt;
+    LpToken public lp;
     uint private immutable feesRate = 3;
     uint private immutable feesDecimal = 1000;
     //uint public ethBalance;
@@ -34,8 +35,9 @@ contract pool {
       _;
     }
 
-    constructor(SbToken _sbToken) {
+    constructor(SbToken _sbToken, LpToken _lpToken) {
         sbt = _sbToken;
+        lp = _lpToken;
         owner = msg.sender;
     }
 
@@ -53,7 +55,11 @@ contract pool {
         isRunning = true;
 
         //emit PoolInitialised(msg.sender, address(sbt), sbtSupply, msg.value);
+
+        lp.create(msg.sender, msg.value, sbtSupply);
     }
+
+    
 
 
     //get the 99.7% of sbt (used for swap)
