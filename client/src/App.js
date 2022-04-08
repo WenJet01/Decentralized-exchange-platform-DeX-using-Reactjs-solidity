@@ -31,11 +31,13 @@ class App extends Component {
     ratioEthToSbt: 0,
     ratioSbtToEth: 0,
     poolRunning: false,
+    loading: true,
     ethValue: null,
     sbtValue: null,
     ethToSbt: true,
-    ratioEth: null,
-    ratioSbt: null
+    sbtGet: 0,
+
+
   };
 
   componentDidMount = async () => {
@@ -66,11 +68,11 @@ class App extends Component {
 
     await this.checkPoolRunning();
 
-    await this.getSwapContract();
+    //await this.getSwapContract();
 
     //await this.runSimpleStorage();
 
-    await this.calculateRatio();
+    //await this.calculateRatio();
 
   };
 
@@ -142,7 +144,7 @@ class App extends Component {
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({ poolContract: instance ,poolSbtBalance:this.weiToToken(sbtBalance), poolEthBalance:this.weiToToken(ethBalance)});
+      this.setState({ poolContract: instance, poolSbtBalance: this.weiToToken(sbtBalance), poolEthBalance: this.weiToToken(ethBalance) });
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -176,31 +178,6 @@ class App extends Component {
       console.error(error);
     }
   }
-
-  //get swap contract
-  getSwapContract = async () => {
-
-    try {
-      // Get the contract instance.
-      const networkId = await this.state.web3.eth.net.getId();
-      const deployedNetwork = swap.networks[networkId];
-      const instance = new this.state.web3.eth.Contract(
-        swap.abi,
-        deployedNetwork && deployedNetwork.address,
-      );
-
-      // Set contract to the state
-      this.setState({ swapContract: instance });
-    } catch (error) {
-      // Catch any errors for any of the above operations.
-      alert(
-        `Failed to load swap contract or web3 or accounts. Check console for details.`,
-      );
-      console.error(error);
-    }
-  }
-
-
 
   deployPool = async () => {
     const { accounts, sbTokenContract, poolContract } = this.state;
@@ -236,37 +213,51 @@ class App extends Component {
 
 
   estimateSbt = async () => {
-    //console.log(await this.state.swapContract.methods.totalTokenEth().call());
-    const sbtEstimate = await this.state.swapContract.methods.getSwapTokenSbEstimate(this.tokenToWei(this.state.ethValue.toString())).call()
-  
-    this.setState({ sbtValue: this.weiToToken(sbtEstimate) });
+    const estimate = await this.state.poolContract.methods.getSwapTokenSbEstimate(this.tokenToWei(this.state.ethValue.toString())).call()
+    const { 0: sbtEstimate, 1: sbtGet } = estimate;
 
+    this.setState({ sbtValue: this.weiToToken(sbtEstimate) });
+    this.setState({ sbtGet: this.weiToToken(sbtGet) });
   }
 
   estimateEth = async () => {
-  
-    //console.log(await this.state.swapContract.methods.totalTokenEth().call());
-    const ethEstimate = await this.state.swapContract.methods.getSwapTokenEthEstimate(this.tokenToWei(this.state.sbtValue.toString())).call()
+    const ethEstimate = await this.state.poolContract.methods.getSwapTokenEthEstimate(this.tokenToWei(this.state.sbtValue.toString())).call()
 
     this.setState({ ethValue: this.weiToToken(ethEstimate) });
 
   }
 
-  calculateRatio = async () => {
-    const ratioEth = await this.state.swapContract.methods.getSwapTokenSbEstimate(this.tokenToWei("1")).call()
-    const ratioSbt = await this.state.swapContract.methods.getSwapTokenEthEstimate(this.tokenToWei("1")).call()
+  getEthNeed = async () => {
+    const eth = await this.state.poolContract.methods.getEthNeed(this.tokenToWei(this.state.sbtValue.toString())).call()
+    const { 0: ethNeed, 1: sbtGet } = eth;
 
-    this.setState({
-      ratioEth: this.weiToToken(ratioEth),
-      ratioSbt: this.weiToToken(ratioSbt)
-    })
+    this.setState({ ethValue: this.weiToToken(ethNeed) });
+    this.setState({ sbtGet: this.weiToToken(sbtGet) });
+  }
+
+  getSbtNeed = async () => {
+    console.log("hi")
+    console.log(this.state.ethValue.toString())
+    const sbt = await this.state.poolContract.methods.getSbtNeed(this.tokenToWei(this.state.ethValue.toString())).call()
+
+    this.setState({ sbtValue: this.weiToToken(sbt) });
   }
 
   swap = async () => {
-    //console.log('hi');
-    await this.state.swapContract.methods.tokenEthSwapTokenSb().send({from: this.state.accounts[0], value: this.tokenToWei(this.state.ethValue) });
-    //
-    console.log(await this.state.swapContract.methods.functionCalled().call());
+    if (this.state.ethToSbt) {
+      await this.state.poolContract.methods.tokenEthSwapTokenSb(this.tokenToWei(this.state.sbtValue), this.tokenToWei(this.state.sbtGet)).send({ from: this.state.accounts[0], value: this.tokenToWei(this.state.ethValue) });
+    } else {
+      await this.state.sbTokenContract.methods.approve(this.state.poolContract.options.address, this.tokenToWei(this.state.sbtValue)).send({ from: this.state.accounts[0] }).on('transactionHash', (hash) => {
+        this.state.poolContract.methods.tokenSbSwapTokenEth(this.tokenToWei(this.state.sbtValue), this.tokenToWei(this.state.ethValue)).send({ from: this.state.accounts[0] }).on('transactionHash', (hash) => {
+          this.setState({ loading: false })
+        })
+      });
+    }
+
+  }
+
+  changeButton = async () => {
+    this.setState({ ethToSbt: !this.state.ethToSbt, ethValue: "", sbtValue: "", sbtGet: "", insuffLiquidity: false });
   }
 
   render() {
@@ -343,7 +334,7 @@ class App extends Component {
 
 
         <div className="divBox">
-          <h3> <IoSwapHorizontalOutline style={{ fontSize: 40, marginTop: -5, marginRight: 20, transform: "scaleX(-1)" }} />Swap</h3>
+          <h3> <IoSwapHorizontalOutline style={{ fontSize: 40, marginTop: -5, marginBottom: 9, marginRight: 20, transform: "scaleX(-1)" }} />Swap</h3>
 
           <div class="swapbox">
             <div class="swapbox_select" style={{ marginRight: 20 }}>
@@ -356,27 +347,32 @@ class App extends Component {
             </div>
 
             <input
+              value={
+                (this.state.ethToSbt) ?
+                  this.state.ethValue
+                  : this.state.sbtValue
+              }
               type="number" class="form-control" placeholder=" Amount" id="input1" step="0.00001" min="0.0001" style={{ width: "80%" }}
               onChange={(e) => {
-                {
-                  (this.state.ethToSbt) ?
+                if (this.state.ethToSbt) {
+                  if (e.target.value.length < 20) {
                     this.setState({ ethValue: e.target.value }, () => { if (this.state.ethValue != 0) { this.estimateSbt() } })
-                    :
+                  } else {
+                    this.setState({ sbtValue: "", sbtGet: "" })
+                  }
+                } else {
+                  if (e.target.value.length < 20) {
                     this.setState({ sbtValue: e.target.value }, () => { if (this.state.sbtValue != 0) { this.estimateEth() } })
+                  } else {
+                    this.setState({ ethValue: "" })
+                  }
                 }
-
               }
               }></input>
           </div>
 
           <div>
-            <button class="buttonChange" onClick={(e) => {
-              this.setState({ ethToSbt: !this.state.ethToSbt },
-                () => {
-                  this.setState({ ethValue: "", sbtValue: "" },
-                )
-                })
-            }}><AiOutlineArrowDown></AiOutlineArrowDown></button>
+            <button class="buttonChange" onClick={() => { this.changeButton() }}><AiOutlineArrowDown></AiOutlineArrowDown></button>
           </div>
 
           <div class="swapbox">
@@ -393,29 +389,46 @@ class App extends Component {
                 (this.state.ethToSbt) ?
                   this.state.sbtValue
                   : this.state.ethValue
-              } type="number" class="form-control" placeholder=" Amount" step="0.00001" min="0.0001" style={{ width: "80%" }}></input>
+              } type="number" class="form-control" placeholder=" Amount" step="0.00001" min="0.0001" style={{ width: "80%" }} onChange={(e) => {
+                {
+
+                  if (this.state.ethToSbt) {
+                    this.setState({ sbtValue: e.target.value }, () => { if (this.state.sbtValue != 0) { this.getEthNeed() } });
+                  } else {
+                    this.setState({ ethValue: e.target.value }, () => { if (this.state.ethValue != 0) { this.getSbtNeed() } })
+                  }
+
+                }
+
+              }}></input>
           </div>
 
-          <div style={{ margin: 10, float: "left" }}>
-            <span>1 ETH : {this.state.ratioEth} SBT</span>
+          <div style={{ margin: 15, float: "left" }}>
+            {
+              (this.state.ethToSbt) ?
+                <span>Receive: {this.state.sbtGet} SBT</span>
+                :
+                null
+            }
+
           </div>
           <div>
-            <button onClick={() => this.swap()} style={(this.state.poolRunning) ?
-              { width: "100%", backgroundColor: "#d65479", border: 0 }
-              : { width: "100%", backgroundColor: "grey", border: 0 }}>
-              {
-                (this.state.poolRunning) ?
-                  <text>Swap</text>
-                  :
-                  <text>No Pool Created</text>
-              }
+            {(this.state.poolRunning) ?
+
+              <button class="swapButton" style={{ backgroundColor: "#FFC0CB" }} onClick={() => { if (this.state.ethValue > 0 && this.state.sbtValue > 0) { this.swap() } }} >
+                Swap
+              </button>
+              : <button class="swapButton" style={{ backgroundColor: "#8a797f", opacity: 0.5 }}>
+              No Pool Created
             </button>
+
+            }
 
           </div>
 
         </div>
 
-      </div>
+      </div >
     );
   }
 }
