@@ -21,6 +21,10 @@ contract pool {
     uint public sbtGet =0;
     bool oneTime = true;
 
+    //addDeposit variable
+    uint public sbtRatio;
+    uint public ethRatio;
+
     event PoolInitialised(
         address account,
         address token,
@@ -162,7 +166,26 @@ contract pool {
         sbtBalance += getActualSbt(amountSbt);
     }
 
-    
+    //addDeposit
+    function calSBT(uint ethAmount) public checkPool returns(uint returnSBT){
+        sbtRatio = sbtBalance/address(this).balance;
+        return ethAmount * sbtRatio;
+    }
+
+    //why 0
+    function calETH(uint sbtAmount) public checkPool returns(uint returnETH){
+        ethRatio = address(this).balance/sbtBalance;
+        return sbtAmount * ethRatio;
+    }
+
+    //pool why sbt no change
+    function deposit(uint sbtDeposit) external payable{
+        payable(address(this)).transfer(msg.value);
+        sbt.transferFrom(msg.sender, address(this), sbtDeposit);
+        sbtBalance += sbtDeposit;
+        oneTime = true;
+        calculateConstant();
+    }
   
     
 }

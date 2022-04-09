@@ -41,6 +41,8 @@ class App extends Component {
     sbtValue: null,
     ethToSbt: true,
     sbtGet: 0,
+    depositEth: null,
+    depositSbt: null,
 
 
     lpDetail:{providedEth:0,providedSbt:0,reward:0}
@@ -296,6 +298,30 @@ class App extends Component {
     this.setState({ ethToSbt: !this.state.ethToSbt, ethValue: "", sbtValue: "", sbtGet: "", insuffLiquidity: false });
   }
 
+  checkSbt = async() => {
+    const checkSbt = await this.state.poolContract.methods.calSBT(this.tokenToWei(this.state.depositEth.toString())).call()
+
+    this.setState({ depositSbt: this.weiToToken(checkSbt) });
+
+  }
+
+  checkEth = async() => {
+    
+    const checkEth = await this.state.poolContract.methods.calETH(this.tokenToWei(this.state.depositSbt.toString())).call()
+
+    this.setState({ depositEth: this.weiToToken(checkEth) });
+
+  }
+
+  deposit = async() => {
+    await this.state.sbTokenContract.methods.approve(this.state.poolContract.options.address, this.tokenToWei(this.state.depositSbt.toString())).send({ from: this.state.accounts[0] });
+   
+    await this.state.poolContract.methods.deposit(this.tokenToWei(this.state.depositSbt.toString())).send({ value: this.tokenToWei(this.state.depositEth.toString()), from: this.state.accounts[0] }).on('transactionHash', function () { });
+  }
+
+
+
+
   render() {
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
@@ -484,12 +510,14 @@ class App extends Component {
         {/* deposit */}
         <div className="divBox">
           <h3><BsBoxArrowUp style={{ fontSize: 38, marginTop: -5 }} /> Deposit</h3>
+          
           <div class="input-group mb-3" style={{ width: "70%", alignItems: "center", margin: "auto", marginTop: 20 }}>
 
             <span class="input-group-text" id="basic-addon1">ETH</span>
 
-            <input type="number" class="form-control" placeholder="Amount of Ether..." step="0.00001" min="0.0001"
-              value={""} onChange={(e) => this.setState({  })}>
+            <input type="number" class="form-control" placeholder="Amount of Ether" step="0.00001" min="0.0001"
+              value={this.state.depositEth} onChange={(e) => { this.setState({depositEth: e.target.value}, ()=> { if (this.state.depositEth != 0) { this.checkSbt()}})}}>
+                
 
             </input>
           </div>
@@ -500,14 +528,17 @@ class App extends Component {
 
             <span class="input-group-text" id="basic-addon1">SBT</span>
 
-            <input type="number" class="form-control" placeholder="Amount of SbToken..." step="0.00001" min="0.0001"
-              value={""} onChange={(e) => this.setState({  })}></input>
+            <input type="number" class="form-control" placeholder="Amount of SbtToken" step="0.00001" min="0.0001"
+              value={this.state.depositSbt} onChange={(e) => { this.setState({depositSbt: e.target.value}, ()=> { if (this.state.depositSbt != 0) { this.checkEth()}})}}>
+                
+            </input>
           </div>
 
           
 
           
-              <button class="btn btn-primary" style={{ width: "80%", marginBottom: 15 }} onClick={""}>
+              <button class="btn btn-primary" style={{ width: "80%", marginBottom: 15 }} 
+              onClick = {() => { if (this.state.depositEth > 0 && this.state.depositSbt > 0) { this.deposit() } }}>
                 Deposit
               </button>
               
