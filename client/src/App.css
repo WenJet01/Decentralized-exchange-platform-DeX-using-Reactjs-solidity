@@ -7,7 +7,7 @@
   align-content: center;
   font-family: monospace;
   font-weight: bold;
-  
+
 }
 
 .App-logo {
@@ -48,7 +48,7 @@
 }
 
 
-.swapbox{
+.swapbox {
   overflow: auto;
   margin: 0px 0;
   padding: 20px;
@@ -59,40 +59,99 @@
   align-items: center;
   justify-content: center;
   display: flex;
-  
+
 }
 
-.buttonChange{
+.buttonChange {
   border: 1;
   border-radius: 20px;
   border-color: rgba(255, 192, 203, 0.774);
   background: whitesmoke;
   margin: 5px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
 }
 
-.buttonChange:hover{
+.buttonChange:hover {
   background-color: rgb(248, 221, 226);
-  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
 
-.swapButton{
+.swapButton {
   border-radius: 5px;
   width: 100%;
   margin: 20;
   border: 0;
   transition: transform 0.3s ease-in;
   padding: 7px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
   transition: 0.2s;
   -webkit-transition-property: box-shadow;
   transition-property: box-shadow;
 }
 
-.swapButton:hover{
-  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+.swapButton:hover {
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 
 }
 
+.range {
+  height: 100px;
+  background: rgb(227, 110, 110);
+  border-radius: 10px;
+  padding: 10px 65px 10px 45px;
+}
 
+.range .sliderValue {
+  position: relative;
+  width: 100%;
+}
 
+.range .field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.range .field .value {
+  position: absolute;
+  font-size: 18px;
+  font-weight: 600;
+  color: #664AFF;
+}
+
+.range .field .value.left {
+  left: -24px;
+}
+
+.range .field .value.right {
+  right: -45px;
+}
+
+.range .field input {
+  -webkit-appearance: none;
+  height: 3px;
+  width: 100%;
+  background: #ddd;
+  border-radius: 5px;
+  outline: none;
+  border: none;
+}
+
+.range .field input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 20px;
+  width: 20px;
+  background: #664AFF;
+  border-radius: 50%;
+  border: 1px solid #664AFF;
+  cursor: pointer;
+}
+
+.withdrawBox {
+  border: 1px solid #282c34;
+  border-radius: 5px;
+  text-align: left;
+  padding: 0 65px 0 20px;
+}

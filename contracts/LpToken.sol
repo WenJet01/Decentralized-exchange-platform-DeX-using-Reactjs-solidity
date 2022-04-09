@@ -24,6 +24,12 @@ contract LpToken {
 
     }
 
+    function minus(address _add, uint eth, uint sbt) public {
+        data[_add].providedEth -= eth;
+        data[_add].providedSbt -= sbt;
+
+    }
+
     function addReward(address _add, uint reward)public {
         data[_add].reward += reward;
     }

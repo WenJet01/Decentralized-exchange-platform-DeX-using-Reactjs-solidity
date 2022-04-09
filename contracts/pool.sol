@@ -7,18 +7,18 @@ import "./LpToken.sol";
 contract pool {
     SbToken public sbt;
     LpToken public lp;
-    uint private immutable feesRate = 3;
-    uint private immutable feesDecimal = 1000;
+    uint256 private immutable feesRate = 3;
+    uint256 private immutable feesDecimal = 1000;
     //uint public ethBalance;
     address public owner;
     uint256 public sbtBalance = 0; //sbt available to use & calculate
     uint256 private sbtReserved = 0; //sbt reserved for liquidity provider reward
     bool public isRunning = false;
 
-    uint k;
-    uint estimateTokenSb;
-    uint estimateTokenEth;
-    uint public sbtGet =0;
+    uint256 k;
+    uint256 estimateTokenSb;
+    uint256 estimateTokenEth;
+    uint256 public sbtGet = 0;
     bool oneTime = true;
 
     event PoolInitialised(
@@ -28,7 +28,6 @@ contract pool {
         uint256 amountEth
     );
 
-
     // Function to receive Ether. msg.data must be empty
     receive() external payable {}
 
@@ -37,12 +36,6 @@ contract pool {
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Only owner is allowed for this action.");
-        _;
-    }
-
-    modifier checkBalance() {
-        require(msg.value > 0);
-        require(msg.value <= msg.sender.balance);
         _;
     }
 
@@ -57,7 +50,7 @@ contract pool {
         _;
     }
 
-    modifier checkBalance2(uint amountSbt) {
+    modifier checkBalance2(uint256 amountSbt) {
         require(amountSbt > 0);
         require(amountSbt <= sbt.balanceOf(msg.sender));
         _;
@@ -69,11 +62,8 @@ contract pool {
         owner = msg.sender;
     }
 
-    
-    function settingUp( uint sbtSupply) public payable onlyOwner{
-       
-        
-        sbt.transferFrom(msg.sender,payable (this), sbtSupply);
+    function settingUp(uint256 sbtSupply) public payable onlyOwner {
+        sbt.transferFrom(msg.sender, payable(this), sbtSupply);
         //payable(address(this)).transfer(msg.value);
 
         //require(msg.sender == owner, "Only owner can deploy the pool.");
@@ -84,9 +74,6 @@ contract pool {
 
         lp.create(msg.sender, msg.value, sbtSupply);
     }
-
-
-
 
     //get the 99.7% of sbt (used for swap)
     function getActualSbt(uint256 fullSbt) internal pure returns (uint256) {
@@ -102,82 +89,94 @@ contract pool {
         return address(this).balance;
     }
 
-    function withdrawLiquity() external payable checkBalance {
-        require(msg.sender == owner, "Only owner can withdraw funds");
+    function withdrawLiquity(uint256 percent, uint256 ownSBT) external payable {
+        // require(msg.sender == owner, "Only owner can withdraw funds");
         // require(amount <= balance[destAddr], "Insufficient funds");
 
+        uint256 sbtWithdraw = (ownSBT * percent) / 100;
         //SBT
-        payable(address(this)).transfer(msg.value);
-        sbt.transfer(msg.sender, 1000);
-        sbtBalance -= 1000;
+        sbt.transfer(payable(msg.sender), sbtWithdraw);
+        sbtBalance -= sbtWithdraw;
         //ETH
-        payable(msg.sender).transfer(50);
+        uint256 withdrawETH = (address(this).balance * percent) / 100;
+        payable(msg.sender).transfer(withdrawETH);
+
+        lp.minus(msg.sender, withdrawETH, sbtWithdraw);
     }
-}
-    function isPoolRunning () public view returns(bool){
+
+    function isPoolRunning() public view returns (bool) {
         return isRunning;
     }
 
-    
     //swap
-    function calculateConstant() internal{
-        if(oneTime){
+    function calculateConstant() internal {
+        if (oneTime) {
             k = address(this).balance * sbtBalance;
             oneTime = false;
         }
-       
     }
 
-    function getSwapTokenSbEstimate(uint _amountTokenEth) public checkPool returns (uint, uint)
+    function getSwapTokenSbEstimate(uint256 _amountTokenEth)
+        public
+        checkPool
+        returns (uint256, uint256)
     {
-        uint tokenEthAfter = address(this).balance + _amountTokenEth;
+        uint256 tokenEthAfter = address(this).balance + _amountTokenEth;
         calculateConstant();
         estimateTokenSb = sbtBalance - (k / tokenEthAfter);
         sbtGet = getActualSbt(estimateTokenSb);
-        return (estimateTokenSb,sbtGet);
+        return (estimateTokenSb, sbtGet);
     }
 
-    function getSwapTokenEthEstimate(uint _amountTokenSb)public checkPool returns (uint)
+    function getSwapTokenEthEstimate(uint256 _amountTokenSb)
+        public
+        checkPool
+        returns (uint256)
     {
-        uint tokenSbAfter = sbtBalance + getActualSbt(_amountTokenSb);
+        uint256 tokenSbAfter = sbtBalance + getActualSbt(_amountTokenSb);
         calculateConstant();
         estimateTokenEth = address(this).balance - (k / tokenSbAfter);
         return (estimateTokenEth);
     }
 
-    function getEthNeed(uint _amountSbt) public checkPool returns (uint, uint)
+    function getEthNeed(uint256 _amountSbt)
+        public
+        checkPool
+        returns (uint256, uint256)
     {
-        uint tokenSbtAfter = sbtBalance - _amountSbt;
+        uint256 tokenSbtAfter = sbtBalance - _amountSbt;
         calculateConstant();
-        uint ethNeed = (k / tokenSbtAfter) - address(this).balance;
+        uint256 ethNeed = (k / tokenSbtAfter) - address(this).balance;
         sbtGet = getActualSbt(_amountSbt);
-        return (ethNeed,sbtGet);
+        return (ethNeed, sbtGet);
     }
 
-    function getSbtNeed(uint _amountEth) public checkPool returns (uint)
-    {
-        uint tokenEthAfter = address(this).balance - _amountEth;
+    function getSbtNeed(uint256 _amountEth) public checkPool returns (uint256) {
+        uint256 tokenEthAfter = address(this).balance - _amountEth;
         calculateConstant();
-        uint sbtNeed = (k / tokenEthAfter) - sbtBalance;
-        uint actual = sbtNeed + getReservedSbt(sbtNeed);
+        uint256 sbtNeed = (k / tokenEthAfter) - sbtBalance;
+        uint256 actual = sbtNeed + getReservedSbt(sbtNeed);
         return (actual);
     }
 
-    function tokenEthSwapTokenSb(uint amountSbt, uint getAmount) external checkBalance payable{
+    function tokenEthSwapTokenSb(uint256 amountSbt, uint256 getAmount)
+        external
+        payable
+        checkBalance
+    {
         sbtReserved = getReservedSbt(amountSbt);
         payable(address(this)).transfer(msg.value);
         sbt.transfer(msg.sender, getAmount);
         sbtBalance -= amountSbt;
     }
 
-    function tokenSbSwapTokenEth(uint amountSbt, uint amountEth) checkBalance2(amountSbt) public{
+    function tokenSbSwapTokenEth(uint256 amountSbt, uint256 amountEth)
+        public
+        checkBalance2(amountSbt)
+    {
         sbtReserved = getReservedSbt(amountSbt);
         sbt.transferFrom(msg.sender, address(this), amountSbt);
         payable(msg.sender).transfer(amountEth);
         sbtBalance += getActualSbt(amountSbt);
     }
-
-    
-  
-    
 }
