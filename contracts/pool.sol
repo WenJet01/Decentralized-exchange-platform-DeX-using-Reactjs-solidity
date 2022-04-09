@@ -58,9 +58,6 @@ contract pool {
         _;
     }
 
-    constructor(SbToken _sbToken) {
-        sbt = _sbToken;
-        
     constructor(SbToken _sbToken, LpToken _lpToken) {
         sbt = _sbToken;
         lp = _lpToken;
@@ -155,14 +152,14 @@ contract pool {
         sbtReserved = getReservedSbt(amountSbt);
         payable(address(this)).transfer(msg.value);
         sbt.transfer(msg.sender, getAmount);
-        sbtBalance -= getAmount;
+        sbtBalance -= amountSbt;
     }
 
     function tokenSbSwapTokenEth(uint amountSbt, uint amountEth) checkBalance2(amountSbt) public{
         sbtReserved = getReservedSbt(amountSbt);
         sbt.transferFrom(msg.sender, address(this), amountSbt);
         payable(msg.sender).transfer(amountEth);
-        sbtBalance += amountSbt;
+        sbtBalance += getActualSbt(amountSbt);
     }
 
     

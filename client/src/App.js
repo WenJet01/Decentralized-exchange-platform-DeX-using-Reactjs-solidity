@@ -434,9 +434,19 @@ class App extends Component {
                 {
 
                   if (this.state.ethToSbt) {
-                    this.setState({ sbtValue: e.target.value }, () => { if (this.state.sbtValue != 0) { this.getEthNeed() } });
+                    if (e.target.value.length < 20) {
+                      this.setState({ sbtValue: e.target.value }, () => { if (this.state.sbtValue != 0) { this.getEthNeed() } });
+                    } else {
+                      this.setState({ ethValue: "" , sbtGet: ""})
+                    }
+                    
                   } else {
-                    this.setState({ ethValue: e.target.value }, () => { if (this.state.ethValue != 0) { this.getSbtNeed() } })
+                    if (e.target.value.length < 20) {
+                      this.setState({ ethValue: e.target.value }, () => { if (this.state.ethValue != 0) { this.getSbtNeed() } })
+                    } else {
+                      this.setState({ sbtValue: "" })
+                    }
+                   
                   }
 
                 }

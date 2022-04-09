@@ -7852,10 +7852,10 @@
         690
       ],
       "SbToken": [
-        871
+        880
       ]
     },
-    "id": 872,
+    "id": 881,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
@@ -7879,7 +7879,7 @@
         "id": 850,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 872,
+        "scope": 881,
         "sourceUnit": 588,
         "src": "68:55:6",
         "symbolAliases": [],
@@ -7905,9 +7905,9 @@
         "contractDependencies": [],
         "contractKind": "contract",
         "fullyImplemented": true,
-        "id": 871,
+        "id": 880,
         "linearizedBaseContracts": [
-          871,
+          880,
           587,
           690,
           665,
@@ -7919,7 +7919,7 @@
         "nodes": [
           {
             "body": {
-              "id": 869,
+              "id": 878,
               "nodeType": "Block",
               "src": "198:130:6",
               "statements": [
@@ -8083,7 +8083,7 @@
                     "arguments": [
                       {
                         "hexValue": "307864394532313035313037344235383366453531413341423730613862633944613062333234333536",
-                        "id": 787,
+                        "id": 870,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
@@ -8102,14 +8102,14 @@
                           "typeIdentifier": "t_rational_100000000000000000000000_by_1",
                           "typeString": "int_const 100000000000000000000000"
                         },
-                        "id": 792,
+                        "id": 875,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
                         "lValueRequested": false,
                         "leftExpression": {
                           "hexValue": "313030303030",
-                          "id": 788,
+                          "id": 871,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": true,
@@ -8130,14 +8130,14 @@
                             "typeIdentifier": "t_rational_1000000000000000000_by_1",
                             "typeString": "int_const 1000000000000000000"
                           },
-                          "id": 791,
+                          "id": 874,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": true,
                           "lValueRequested": false,
                           "leftExpression": {
                             "hexValue": "3130",
-                            "id": 789,
+                            "id": 872,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": true,
@@ -8155,7 +8155,7 @@
                           "operator": "**",
                           "rightExpression": {
                             "hexValue": "3138",
-                            "id": 790,
+                            "id": 873,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": true,
@@ -8193,7 +8193,7 @@
                           "typeString": "int_const 100000000000000000000000"
                         }
                       ],
-                      "id": 786,
+                      "id": 869,
                       "name": "_mint",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
@@ -8204,7 +8204,7 @@
                         "typeString": "function (address,uint256)"
                       }
                     },
-                    "id": 793,
+                    "id": 876,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -8219,13 +8219,13 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 794,
+                  "id": 877,
                   "nodeType": "ExpressionStatement",
                   "src": "254:66:6"
                 }
               ]
             },
-            "id": 870,
+            "id": 879,
             "implemented": true,
             "kind": "constructor",
             "modifiers": [
@@ -8292,15 +8292,15 @@
               "parameters": [],
               "src": "198:0:6"
             },
-            "scope": 871,
-            "src": "160:91:6",
+            "scope": 880,
+            "src": "160:168:6",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "public"
           }
         ],
-        "scope": 872,
-        "src": "127:129:6",
+        "scope": 881,
+        "src": "127:206:6",
         "usedErrors": []
       }
     ],
@@ -8322,10 +8322,10 @@
         690
       ],
       "SbToken": [
-        871
+        880
       ]
     },
-    "id": 872,
+    "id": 881,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
@@ -8349,7 +8349,7 @@
         "id": 850,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 872,
+        "scope": 881,
         "sourceUnit": 588,
         "src": "68:55:6",
         "symbolAliases": [],
@@ -8375,9 +8375,9 @@
         "contractDependencies": [],
         "contractKind": "contract",
         "fullyImplemented": true,
-        "id": 871,
+        "id": 880,
         "linearizedBaseContracts": [
-          871,
+          880,
           587,
           690,
           665,
@@ -8389,7 +8389,7 @@
         "nodes": [
           {
             "body": {
-              "id": 869,
+              "id": 878,
               "nodeType": "Block",
               "src": "198:130:6",
               "statements": [
@@ -8553,7 +8553,7 @@
                     "arguments": [
                       {
                         "hexValue": "307864394532313035313037344235383366453531413341423730613862633944613062333234333536",
-                        "id": 787,
+                        "id": 870,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
@@ -8572,14 +8572,14 @@
                           "typeIdentifier": "t_rational_100000000000000000000000_by_1",
                           "typeString": "int_const 100000000000000000000000"
                         },
-                        "id": 792,
+                        "id": 875,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
                         "lValueRequested": false,
                         "leftExpression": {
                           "hexValue": "313030303030",
-                          "id": 788,
+                          "id": 871,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": true,
@@ -8600,14 +8600,14 @@
                             "typeIdentifier": "t_rational_1000000000000000000_by_1",
                             "typeString": "int_const 1000000000000000000"
                           },
-                          "id": 791,
+                          "id": 874,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": true,
                           "lValueRequested": false,
                           "leftExpression": {
                             "hexValue": "3130",
-                            "id": 789,
+                            "id": 872,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": true,
@@ -8625,7 +8625,7 @@
                           "operator": "**",
                           "rightExpression": {
                             "hexValue": "3138",
-                            "id": 790,
+                            "id": 873,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": true,
@@ -8663,7 +8663,7 @@
                           "typeString": "int_const 100000000000000000000000"
                         }
                       ],
-                      "id": 786,
+                      "id": 869,
                       "name": "_mint",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
@@ -8674,7 +8674,7 @@
                         "typeString": "function (address,uint256)"
                       }
                     },
-                    "id": 793,
+                    "id": 876,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -8689,13 +8689,13 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 794,
+                  "id": 877,
                   "nodeType": "ExpressionStatement",
                   "src": "254:66:6"
                 }
               ]
             },
-            "id": 870,
+            "id": 879,
             "implemented": true,
             "kind": "constructor",
             "modifiers": [
@@ -8762,15 +8762,15 @@
               "parameters": [],
               "src": "198:0:6"
             },
-            "scope": 871,
-            "src": "160:91:6",
+            "scope": 880,
+            "src": "160:168:6",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "public"
           }
         ],
-        "scope": 872,
-        "src": "127:129:6",
+        "scope": 881,
+        "src": "127:206:6",
         "usedErrors": []
       }
     ],
@@ -8835,12 +8835,12 @@
         }
       },
       "links": {},
-      "address": "0xaD9C23A87A3FbEA6D409507c873D350d8a358c0C",
-      "transactionHash": "0x53a7c2cf9b7722612f043c5a4cac722c6ef9947e65363efc64189b2b14a63886"
+      "address": "0xC867Ac18fbd04dCF5e2AA12CA24c05202134fb8c",
+      "transactionHash": "0x859da7f7bfb164700cd04b0f011189bb9c6c8d8a1061306122357619ea985b5f"
     }
   },
-  "schemaVersion": "3.4.4",
-  "updatedAt": "2022-04-08T19:37:00.819Z",
+  "schemaVersion": "3.4.6",
+  "updatedAt": "2022-04-09T04:16:53.190Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
