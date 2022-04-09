@@ -19,7 +19,7 @@ contract pool {
     uint estimateTokenSb;
     uint estimateTokenEth;
     uint public sbtGet =0;
-    bool oneTime = true;
+
 
     //addDeposit variable
     uint public sbtRatio;
@@ -78,6 +78,7 @@ contract pool {
 
         //require(msg.sender == owner, "Only owner can deploy the pool.");
         sbtBalance += sbtSupply;
+        calculateConstant();
         isRunning = true;
 
         //emit PoolInitialised(msg.sender, address(sbt), sbtSupply, msg.value);
@@ -110,17 +111,15 @@ contract pool {
     
     //swap
     function calculateConstant() internal{
-        if(oneTime){
+
             k = address(this).balance * sbtBalance;
-            oneTime = false;
-        }
-       
+ 
     }
 
     function getSwapTokenSbEstimate(uint _amountTokenEth) public checkPool returns (uint, uint)
     {
         uint tokenEthAfter = address(this).balance + _amountTokenEth;
-        calculateConstant();
+        //calculateConstant();
         estimateTokenSb = sbtBalance - (k / tokenEthAfter);
         sbtGet = getActualSbt(estimateTokenSb);
         return (estimateTokenSb,sbtGet);
@@ -183,8 +182,13 @@ contract pool {
         payable(address(this)).transfer(msg.value);
         sbt.transferFrom(msg.sender, address(this), sbtDeposit);
         sbtBalance += sbtDeposit;
-        oneTime = true;
         calculateConstant();
+        if(lp.get(msg.sender).providedEth == 0){
+            lp.create(msg.sender, msg.value, sbtDeposit);
+        }else{
+            lp.update(msg.sender, msg.value, sbtDeposit);
+        }
+        
     }
   
     

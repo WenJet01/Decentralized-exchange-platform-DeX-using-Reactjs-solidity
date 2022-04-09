@@ -149,12 +149,12 @@ class App extends Component {
         deployedNetwork && deployedNetwork.address,
       );
 
-      const sbtBalance = await instance.methods.sbtBalance().call();
-      const ethBalance = await instance.methods.getBalanceEth().call();
+      // const sbtBalance = await instance.methods.sbtBalance().call();
+      // const ethBalance = await instance.methods.getBalanceEth().call();
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({ poolContract: instance, poolSbtBalance: this.weiToToken(sbtBalance), poolEthBalance: this.weiToToken(ethBalance) }, ()=>this.checkPoolRunning());
+      this.setState({ poolContract: instance, }, ()=>this.getPoolValue());
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -235,18 +235,20 @@ class App extends Component {
 
     
     
-    const sbtBalance = await this.state.poolContract.methods.sbtBalance().call();
-    const ethBalance = await this.state.poolContract.methods.getBalanceEth().call();
+    
     //const sbtBalance = '10000';
     //const ethBalance =  '1000000000';
 
-    this.setState({ poolSbtBalance: this.weiToToken(sbtBalance), poolEthBalance: this.weiToToken(ethBalance) }, () => this.checkPoolRunning());
+    this.getPoolValue();
+    this.getLpDetail();
   };
 
-  checkPoolRunning = async () => {
+  getPoolValue = async () => {
     const deployed = await this.state.poolContract.methods.isRunning().call()
+    const sbtBalance = await this.state.poolContract.methods.sbtBalance().call();
+    const ethBalance = await this.state.poolContract.methods.getBalanceEth().call();
 
-    this.setState({ poolRunning: deployed },()=>this.getLpDetail());
+    this.setState({ poolRunning: deployed, poolSbtBalance: this.weiToToken(sbtBalance), poolEthBalance: this.weiToToken(ethBalance) });
   }
 
 
