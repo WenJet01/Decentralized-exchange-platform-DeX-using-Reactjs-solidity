@@ -152,7 +152,7 @@ contract pool {
         sbtReserved = getReservedSbt(amountSbt);
         payable(address(this)).transfer(msg.value);
         sbt.transfer(msg.sender, getAmount);
-        sbtBalance -= amountSbt;
+        sbtBalance -= getAmount;
     }
 
     function tokenSbSwapTokenEth(uint amountSbt, uint amountEth) checkBalance2(amountSbt) public{
