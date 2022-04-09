@@ -4,13 +4,16 @@ import SbToken from "./contracts/SbToken.json"
 import LpToken from "./contracts/LpToken.json"
 import pool from "./contracts/pool.json"
 import getWeb3 from "./getWeb3";
+import swap from "./contracts/swap.json"
 
 
 import { TiSpanner } from "react-icons/ti";
 import { MdSwapVert } from "react-icons/md";
-import { HiOutlinePlusCircle } from "react-icons/hi";
-import { AiOutlineSwap } from "react-icons/ai"
-import { BsBoxArrowUp, BsBoxArrowDown } from "react-icons/bs"
+import { IoSwapHorizontalOutline } from "react-icons/io5";
+import { AiOutlineArrowDown } from "react-icons/ai";
+import {HiOutlinePlusCircle}from "react-icons/hi";
+import {AiOutlineSwap} from "react-icons/ai"
+import {BsBoxArrowUp, BsBoxArrowDown} from "react-icons/bs"
 
 import "./App.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -33,6 +36,13 @@ class App extends Component {
     ratioEthToSbt: 0,
     ratioSbtToEth: 0,
     poolRunning: false,
+    loading: true,
+    ethValue: null,
+    sbtValue: null,
+    ethToSbt: true,
+    sbtGet: 0,
+
+
     lpDetail:{providedEth:0,providedSbt:0,reward:0}
   };
 
@@ -66,6 +76,7 @@ class App extends Component {
 
     //await this.checkPoolRunning();
 
+    //await this.getSwapContract();
 
     //await this.runSimpleStorage();
 
@@ -240,9 +251,53 @@ class App extends Component {
     this.setState({ poolRunning: deployed }, () => this.getLpDetail());
   }
 
-  withdraw = async () => {
 
-    await this.state.poolContract.withdrawLiquity().call();
+  estimateSbt = async () => {
+    const estimate = await this.state.poolContract.methods.getSwapTokenSbEstimate(this.tokenToWei(this.state.ethValue.toString())).call()
+    const { 0: sbtEstimate, 1: sbtGet } = estimate;
+
+    this.setState({ sbtValue: this.weiToToken(sbtEstimate) });
+    this.setState({ sbtGet: this.weiToToken(sbtGet) });
+  }
+
+  estimateEth = async () => {
+    const ethEstimate = await this.state.poolContract.methods.getSwapTokenEthEstimate(this.tokenToWei(this.state.sbtValue.toString())).call()
+
+    this.setState({ ethValue: this.weiToToken(ethEstimate) });
+
+  }
+
+  getEthNeed = async () => {
+    const eth = await this.state.poolContract.methods.getEthNeed(this.tokenToWei(this.state.sbtValue.toString())).call()
+    const { 0: ethNeed, 1: sbtGet } = eth;
+
+    this.setState({ ethValue: this.weiToToken(ethNeed) });
+    this.setState({ sbtGet: this.weiToToken(sbtGet) });
+  }
+
+  getSbtNeed = async () => {
+    console.log("hi")
+    console.log(this.state.ethValue.toString())
+    const sbt = await this.state.poolContract.methods.getSbtNeed(this.tokenToWei(this.state.ethValue.toString())).call()
+
+    this.setState({ sbtValue: this.weiToToken(sbt) });
+  }
+
+  swap = async () => {
+    if (this.state.ethToSbt) {
+      await this.state.poolContract.methods.tokenEthSwapTokenSb(this.tokenToWei(this.state.sbtValue), this.tokenToWei(this.state.sbtGet)).send({ from: this.state.accounts[0], value: this.tokenToWei(this.state.ethValue) });
+    } else {
+      await this.state.sbTokenContract.methods.approve(this.state.poolContract.options.address, this.tokenToWei(this.state.sbtValue)).send({ from: this.state.accounts[0] }).on('transactionHash', (hash) => {
+        this.state.poolContract.methods.tokenSbSwapTokenEth(this.tokenToWei(this.state.sbtValue), this.tokenToWei(this.state.ethValue)).send({ from: this.state.accounts[0] }).on('transactionHash', (hash) => {
+          this.setState({ loading: false })
+        })
+      });
+    }
+
+  }
+
+  changeButton = async () => {
+    this.setState({ ethToSbt: !this.state.ethToSbt, ethValue: "", sbtValue: "", sbtGet: "", insuffLiquidity: false });
   }
 
   render() {
@@ -326,6 +381,106 @@ class App extends Component {
         <div className="divBox">
           <h3><AiOutlineSwap style={{ fontSize: 40, marginTop: -5 }} /> Swap</h3>
 
+          <div class="swapbox">
+            <div class="swapbox_select" style={{ marginRight: 20 }}>
+              {
+                (this.state.ethToSbt) ? <text>ETH</text>
+                  :
+                  <text>SBT</text>
+              }
+
+            </div>
+
+            <input
+              value={
+                (this.state.ethToSbt) ?
+                  this.state.ethValue
+                  : this.state.sbtValue
+              }
+              type="number" class="form-control" placeholder=" Amount" id="input1" step="0.00001" min="0.0001" style={{ width: "80%" }}
+              onChange={(e) => {
+                if (this.state.ethToSbt) {
+                  if (e.target.value.length < 20) {
+                    this.setState({ ethValue: e.target.value }, () => { if (this.state.ethValue != 0) { this.estimateSbt() } })
+                  } else {
+                    this.setState({ sbtValue: "", sbtGet: "" })
+                  }
+                } else {
+                  if (e.target.value.length < 20) {
+                    this.setState({ sbtValue: e.target.value }, () => { if (this.state.sbtValue != 0) { this.estimateEth() } })
+                  } else {
+                    this.setState({ ethValue: "" })
+                  }
+                }
+              }
+              }></input>
+          </div>
+
+          <div>
+            <button class="buttonChange" onClick={() => { this.changeButton() }}><AiOutlineArrowDown></AiOutlineArrowDown></button>
+          </div>
+
+          <div class="swapbox">
+            <div class="swapbox_select" style={{ marginRight: 20 }}>
+              {
+                (this.state.ethToSbt) ? <text>SBT</text>
+                  :
+                  <text>ETH</text>
+              }
+
+            </div>
+            <input
+              value={
+                (this.state.ethToSbt) ?
+                  this.state.sbtValue
+                  : this.state.ethValue
+              } type="number" class="form-control" placeholder=" Amount" step="0.00001" min="0.0001" style={{ width: "80%" }} onChange={(e) => {
+                {
+
+                  if (this.state.ethToSbt) {
+                    if (e.target.value.length < 20) {
+                      this.setState({ sbtValue: e.target.value }, () => { if (this.state.sbtValue != 0) { this.getEthNeed() } });
+                    } else {
+                      this.setState({ ethValue: "" , sbtGet: ""})
+                    }
+
+                  } else {
+                    if (e.target.value.length < 20) {
+                      this.setState({ ethValue: e.target.value }, () => { if (this.state.ethValue != 0) { this.getSbtNeed() } })
+                    } else {
+                      this.setState({ sbtValue: "" })
+                    }
+
+                  }
+
+                }
+
+              }}></input>
+          </div>
+
+          <div style={{ margin: 15, float: "left" }}>
+            {
+              (this.state.ethToSbt) ?
+                <span>Receive: {this.state.sbtGet} SBT</span>
+                :
+                null
+            }
+
+          </div>
+          <div>
+            {(this.state.poolRunning) ?
+
+              <button class="swapButton" style={{ backgroundColor: "#FFC0CB" }} onClick={() => { if (this.state.ethValue > 0 && this.state.sbtValue > 0) { this.swap() } }} >
+                Swap
+              </button>
+              : <button class="swapButton" style={{ backgroundColor: "#8a797f", opacity: 0.5 }}>
+              No Pool Created
+            </button>
+
+            }
+
+          </div>
+
 
         </div>
 
@@ -377,7 +532,7 @@ class App extends Component {
 
         </div>
 
-      </div>
+      </div >
     );
   }
 }
