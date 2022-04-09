@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import SimpleStorageContract from "./contracts/SimpleStorage.json";
 import SbToken from "./contracts/SbToken.json"
+import LpToken from "./contracts/LpToken.json"
 import pool from "./contracts/pool.json"
 import getWeb3 from "./getWeb3";
 
@@ -31,10 +32,8 @@ class App extends Component {
     setUpSbt: null,
     ratioEthToSbt: 0,
     ratioSbtToEth: 0,
-
     poolRunning: false,
-    lpDetail: { providedEth: 0, providedSbt: 0, reward: 0 }
-
+    lpDetail:{providedEth:0,providedSbt:0,reward:0}
   };
 
   componentDidMount = async () => {
@@ -59,7 +58,10 @@ class App extends Component {
 
     await this.getSbTokenContract();
 
+    await this.getLpTokenContract();
+
     await this.getPoolContract();
+
 
 
     //await this.checkPoolRunning();
@@ -199,7 +201,7 @@ class App extends Component {
   getLpDetail = async () => {
     const lp = await this.state.lpTokenContract.methods.get(this.state.accounts[0]).call();
 
-    this.setState({ lpDetail: lp });
+    this.setState({lpDetail : lp});
   }
 
 
@@ -207,12 +209,11 @@ class App extends Component {
   deployPool = async () => {
 
 
-    if (accounts[0] != await poolContract.methods.owner().call()) {
-      alert("Only the owner can deploy the pool.")
-    }
+    // if(this.state.accounts[0] != await this.state.poolContract.methods.owner().call()){
+    //   alert("Only the owner can deploy the pool.")
+    // }
 
     //const response = await contract.methods.balanceOf(accounts[0]).call();
-
     await this.state.sbTokenContract.methods.approve(this.state.poolContract.options.address, this.tokenToWei(this.state.setUpSbt.toString())).send({ from: this.state.accounts[0] });
 
     await this.state.poolContract.methods.settingUp(this.tokenToWei(this.state.setUpSbt.toString())).send({ value: this.tokenToWei(this.state.setUpEth.toString()), from: this.state.accounts[0] }).on('transactionHash', function () { });
@@ -233,12 +234,14 @@ class App extends Component {
   checkPoolRunning = async () => {
     const deployed = await this.state.poolContract.methods.isRunning().call();
 
+    this.setState({ poolRunning: deployed },()=>this.getLpDetail());
+  }
 
     this.setState({ poolRunning: deployed }, () => this.getLpDetail());
   }
 
   withdraw = async () => {
-    
+
     await this.state.poolContract.withdrawLiquity().call();
   }
 
@@ -362,22 +365,15 @@ class App extends Component {
 
         {/* withdraw */}
         <div className="divBox">
-
-          <h3><BsBoxArrowDown style={{ fontSize: 38, marginTop: -5 }} /> Withdraw</h3>
+          <h3><BsBoxArrowDown style={{ fontSize: 38, marginTop: -5}} /> Withdraw</h3>
           <div>LP details</div>
           <div>providedEth : {this.weiToToken(this.state.lpDetail.providedEth.toString())}</div>
           <div>providedSbt : {this.weiToToken(this.state.lpDetail.providedSbt.toString())}</div>
           <div>reward : {this.weiToToken(this.state.lpDetail.reward.toString())}</div>
 
-          <div>test : {this.weiToToken(this.state.lp)}</div>
-
-          <button class="btn btn-primary" style={{ width: "80%", marginBottom: 15, marginTop: 15 }} onClick={() => this.withdraw()}>
-
+          <button class="btn btn-primary" style={{ width: "80%", marginBottom: 15 ,marginTop:15}} onClick={""}>
             Withdraw
           </button>
-
-
-
 
         </div>
 
