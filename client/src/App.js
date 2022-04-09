@@ -309,7 +309,7 @@ class App extends Component {
     
     const checkEth = await this.state.poolContract.methods.calETH(this.tokenToWei(this.state.depositSbt.toString())).call()
 
-    this.setState({ depositEth: this.weiToToken(checkEth) });
+    this.setState({ depositEth: (this.weiToToken(checkEth))/10**18 });
 
   }
 
