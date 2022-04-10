@@ -94,6 +94,7 @@ contract pool {
         return address(this).balance;
     }
 
+    //withdraw
     function withdrawLiquity(uint256 percent, uint256 ownSBT) external payable {
         // require(msg.sender == owner, "Only owner can withdraw funds");
         // require(amount <= balance[destAddr], "Insufficient funds");
@@ -197,18 +198,16 @@ contract pool {
     }
 
     //addDeposit
-    function calSBT(uint ethAmount) public checkPool returns(uint){
-        sbtRatio = sbtBalance/address(this).balance;
+    function calSBT(uint ethAmount) public checkPool returns(uint returnSBT){
+        sbtRatio = (sbtBalance/(address(this).balance) * 10**18);
         return ethAmount * sbtRatio;
     }
 
-    //why 0
-    function calETH(uint sbtAmount) public checkPool returns(uint){
-        ethRatio = ((address(this).balance)* 10**18/sbtBalance);
+    function calETH(uint sbtAmount) public checkPool returns(uint returnETH){
+        ethRatio = ((address(this).balance) *10**18 /sbtBalance);
         return sbtAmount * ethRatio;
     }
 
-    //pool why sbt no change
     function deposit(uint sbtDeposit) external payable{
         payable(address(this)).transfer(msg.value);
         sbt.transferFrom(msg.sender, address(this), sbtDeposit);
