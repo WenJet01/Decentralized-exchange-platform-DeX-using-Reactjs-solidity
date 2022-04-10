@@ -2030,13 +2030,8 @@
     "version": "0.8.13+commit.abaa5c0e.Emscripten.clang"
   },
   "networks": {},
-<<<<<<< Updated upstream
-  "schemaVersion": "3.4.4",
-  "updatedAt": "2022-04-10T07:15:09.252Z",
-=======
   "schemaVersion": "3.4.5",
   "updatedAt": "2022-04-10T07:52:28.192Z",
->>>>>>> Stashed changes
   "devdoc": {
     "details": "Interface of the ERC20 standard as defined in the EIP.",
     "events": {
