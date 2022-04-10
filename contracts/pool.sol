@@ -66,6 +66,7 @@ contract pool {
         owner = msg.sender;
     }
 
+    //deploy the pool by owner
     function settingUp(uint256 sbtSupply) public payable onlyOwner {
         sbt.transferFrom(msg.sender, payable(this), sbtSupply);
         //payable(address(this)).transfer(msg.value);
@@ -76,7 +77,7 @@ contract pool {
         isRunning = true;
         lp.addSupply(k);
 
-        //emit PoolInitialised(msg.sender, address(sbt), sbtSupply, msg.value);
+        emit PoolInitialised(msg.sender, address(sbt), sbtSupply, msg.value);
 
     }
 
@@ -205,8 +206,6 @@ contract pool {
         uint256 percent
 
     ) external payable {
-        // require(msg.sender == owner, "Only owner can withdraw funds");
-        // require(amount <= balance[destAddr], "Insufficient funds");
 
         (uint lpToken, uint sbtAvailable, uint ethAvailable, uint rewardAvailable) = getAmountWithdraw(msg.sender);
 
