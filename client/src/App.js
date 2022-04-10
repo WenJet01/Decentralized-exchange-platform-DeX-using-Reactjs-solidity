@@ -269,6 +269,7 @@ class App extends Component {
   }
 
   getEthNeed = async () => {
+
     const eth = await this.state.poolContract.methods.getEthNeed(this.tokenToWei(this.state.sbtValue.toString())).call()
     const { 0: ethNeed, 1: sbtGet } = eth;
 
@@ -301,22 +302,22 @@ class App extends Component {
     this.setState({ ethToSbt: !this.state.ethToSbt, ethValue: "", sbtValue: "", sbtGet: "", insuffLiquidity: false });
   }
 
-  checkSbt = async() => {
+  checkSbt = async () => {
     const checkSbt = await this.state.poolContract.methods.calSBT(this.tokenToWei(this.state.depositEth.toString())).call()
 
-    this.setState({ depositSbt: (this.weiToToken(checkSbt)) / 10**18 });
+    this.setState({ depositSbt: (this.weiToToken(checkSbt)) / 10 ** 18 });
 
   }
 
-  checkEth = async() => {
+  checkEth = async () => {
 
     const checkEth = await this.state.poolContract.methods.calETH(this.tokenToWei(this.state.depositSbt.toString())).call()
 
-    this.setState({ depositEth: (this.weiToToken(checkEth)) / 10**18 });
+    this.setState({ depositEth: (this.weiToToken(checkEth)) / 10 ** 18 });
 
   }
 
-  deposit = async() => {
+  deposit = async () => {
     await this.state.sbTokenContract.methods.approve(this.state.poolContract.options.address, this.tokenToWei(this.state.depositSbt.toString())).send({ from: this.state.accounts[0] });
 
     await this.state.poolContract.methods.deposit(this.tokenToWei(this.state.depositSbt.toString())).send({ value: this.tokenToWei(this.state.depositEth.toString()), from: this.state.accounts[0] }).on('transactionHash', function () { });
@@ -346,13 +347,23 @@ class App extends Component {
     }
     return (
       <div className="App">
+        <nav className="nav">
+          <div className="title">SBT SWAP</div>
+          <div className="account">
+            Account: {this.state.accounts[0]}
+          </div>
+        </nav>
+
         <div className="divBox">
           <h3><TiSpanner style={{ fontSize: 40, marginTop: -5, transform: "scaleX(-1)" }} /> Set Up Pool</h3>
-          <div class="input-group mb-3" style={{ width: "70%", alignItems: "center", margin: "auto", marginTop: 20 }}>
+          <div class="swapbox" style={{ marginBottom: 10 }}>
 
-            <span class="input-group-text" id="basic-addon1">ETH</span>
+            <div class="swapbox_select" style={{ marginRight: 20 }}>
+              <text>ETH</text>
 
-            <input type="number" class="form-control" placeholder="Amount of Ether..." step="0.00001" min="0.0001"
+            </div>
+
+            <input type="number" class="form-control" placeholder="Amount of Ether..." step="0.00001" min="0.0001" style={{ width: "80%" }}
               value={this.state.setUpEth} onChange={(e) => this.setState({ setUpEth: e.target.value })}>
 
             </input>
@@ -360,11 +371,13 @@ class App extends Component {
 
           <MdSwapVert style={{ fontSize: 40, marginBottom: -13, marginTop: -10 }} />
 
-          <div class="input-group mb-3" style={{ width: "70%", alignItems: "center", margin: "auto", marginTop: 20 }}>
+          <div class="swapbox" style={{ marginTop: 10 }}>
 
-            <span class="input-group-text" id="basic-addon1">SBT</span>
+            <div class="swapbox_select" style={{ marginRight: 20 }}>
+              <text>SBT</text>
+            </div>
 
-            <input type="number" class="form-control" placeholder="Amount of SbToken..." step="0.00001" min="0.0001"
+            <input type="number" class="form-control" placeholder="Amount of SbToken..." step="0.00001" min="0.0001" style={{ width: "80%" }}
               value={this.state.setUpSbt} onChange={(e) => this.setState({ setUpSbt: e.target.value })}></input>
           </div>
 
@@ -386,17 +399,17 @@ class App extends Component {
 
 
           {this.state.poolRunning ?
-            <button class="btn btn-primary disabled" style={{ width: "80%", marginBottom: 15 }}>
+            <button class="btn btn-primary disabled" style={{ width: "100%", marginBottom: 15, backgroundColor: "#10154D" }}>
               Pool Is Running
             </button>
             :
 
             (this.state.setUpSbt / this.state.setUpEth) > 0 && (this.state.setUpSbt / this.state.setUpEth) < Infinity ?
-              <button class="btn btn-primary" style={{ width: "80%", marginBottom: 15 }} onClick={() => this.deployPool()}>
+              <button class="btn btn-primary" style={{ width: "100%", marginBottom: 15, backgroundColor: "#10154D" }} onClick={() => this.deployPool()}>
                 Deploy
               </button>
               :
-              <button class="btn btn-primary disabled" style={{ width: "80%", marginBottom: 15 }}>
+              <button class="btn btn-primary disabled" style={{ width: "100%", marginBottom: 15, backgroundColor: "#10154D" }}>
                 Deploy
               </button>
 
@@ -440,13 +453,14 @@ class App extends Component {
               type="number" class="form-control" placeholder=" Amount" id="input1" step="0.00001" min="0.0001" style={{ width: "80%" }}
               onChange={(e) => {
                 if (this.state.ethToSbt) {
-                  if (e.target.value.length < 20) {
+
+                  if (e.target.value.length < 10) {
                     this.setState({ ethValue: e.target.value }, () => { if (this.state.ethValue != 0) { this.estimateSbt() } })
                   } else {
                     this.setState({ sbtValue: "", sbtGet: "" })
                   }
                 } else {
-                  if (e.target.value.length < 20) {
+                  if (e.target.value.length < 10) {
                     this.setState({ sbtValue: e.target.value }, () => { if (this.state.sbtValue != 0) { this.estimateEth() } })
                   } else {
                     this.setState({ ethValue: "" })
@@ -478,15 +492,22 @@ class App extends Component {
                 {
 
                   if (this.state.ethToSbt) {
-                    if (e.target.value.length < 20) {
+
+                    if (e.target.value.length < 10) {
                       this.setState({ sbtValue: e.target.value }, () => { if (this.state.sbtValue != 0) { this.getEthNeed() } });
+                      if (e.target.value == this.state.poolSbtBalance) {
+                        this.setState({ ethValue: "", sbtGet: "" })
+                      }
                     } else {
                       this.setState({ ethValue: "", sbtGet: "" })
                     }
 
                   } else {
-                    if (e.target.value.length < 20) {
+                    if (e.target.value.length < 10) {
                       this.setState({ ethValue: e.target.value }, () => { if (this.state.ethValue != 0) { this.getSbtNeed() } })
+                      if (e.target.value == this.state.poolEthBalance) {
+                        this.setState({ sbtValue: "" })
+                      }
                     } else {
                       this.setState({ sbtValue: "" })
                     }
@@ -508,15 +529,24 @@ class App extends Component {
 
           </div>
           <div>
-            {(this.state.poolRunning) ?
 
-              <button class="swapButton" style={{ backgroundColor: "#FFC0CB" }} onClick={() => { if (this.state.ethValue > 0 && this.state.sbtValue > 0) { this.swap() } }} >
-                Swap
-              </button>
-              : <button class="swapButton" style={{ backgroundColor: "#8a797f", opacity: 0.5 }}>
-                No Pool Created
-              </button>
+            {
+              (this.state.poolRunning == false) ?
 
+                <button class="btn btn-primary disabled" style={{ width: "100%", marginBottom: 15, backgroundColor: "#10154D" }}>
+                  No Pool Created
+                </button>
+                : ((Math.round(this.state.sbtValue) <= Math.round(this.state.poolSbtBalance)) && this.state.ethToSbt) ?
+                  <button class="btn btn-primary" style={{ width: "100%", marginBottom: 15, backgroundColor: "#10154D" }} onClick={() => { if (this.state.ethValue > 0 && this.state.sbtValue > 0) { this.swap() } }} >
+                    Swap
+                  </button>
+                  : ((this.state.ethToSbt == false) && (Math.round(this.state.ethValue) <= Math.round(this.state.poolEthBalance))) ?
+                    <button class="btn btn-primary" style={{ width: "100%", marginBottom: 15, backgroundColor: "#10154D" }} onClick={() => { if (this.state.ethValue > 0 && this.state.sbtValue > 0) { this.swap() } }} >
+                      Swap
+                    </button>
+                    : <button class="btn btn-primary disabled" style={{ width: "100%", marginBottom: 15, backgroundColor: "#10154D" }}>
+                      Insufficient liquidity for this trade
+                    </button>
             }
 
           </div>
@@ -527,13 +557,15 @@ class App extends Component {
 
         {/* deposit */}
         <div className="divBox">
-          <h3><BsBoxArrowUp style={{ fontSize: 38, marginTop: -5 }} /> Deposit</h3>
+          <h3><BsBoxArrowUp style={{ fontSize: 40, marginTop: -5 }} /> Deposit</h3>
 
-          <div class="input-group mb-3" style={{ width: "70%", alignItems: "center", margin: "auto", marginTop: 20 }}>
+          <div class="swapbox" style={{ marginBottom: 10 }}>
 
-            <span class="input-group-text" id="basic-addon1">ETH</span>
+            <div class="swapbox_select" style={{ marginRight: 20 }}>
+              <text>ETH</text>
+            </div>
 
-            <input type="number" class="form-control" placeholder="Amount of Ether" step="0.00001" min="0.0001"
+            <input type="number" class="form-control" placeholder="Amount of Ether" step="0.00001" min="0.0001" style={{ width: "80%" }}
               value={this.state.depositEth} onChange={(e) => { 
                 {
                   if(e.target.value.length <= 6){
@@ -550,11 +582,13 @@ class App extends Component {
 
           <HiOutlinePlusCircle style={{ fontSize: 40, marginBottom: -13, marginTop: -10 }} />
 
-          <div class="input-group mb-3" style={{ width: "70%", alignItems: "center", margin: "auto", marginTop: 20 }}>
+          <div class="swapbox" style={{ marginTop: 10 }}>
 
-            <span class="input-group-text" id="basic-addon1">SBT</span>
+            <div class="swapbox_select" style={{ marginRight: 20 }}>
+              <text>SBT</text>
+            </div>
 
-            <input type="number" class="form-control" placeholder="Amount of SbtToken" step="0.00001" min="0.0001"
+            <input type="number" class="form-control" placeholder="Amount of SbtToken" step="0.00001" min="0.0001" style={{ width: "80%" }}
               value={this.state.depositSbt} onChange={(e) => { 
                 {
                   if(e.target.value.length <= 6){
@@ -568,10 +602,18 @@ class App extends Component {
             </input>
           </div>
 
-              <button class="btn btn-primary" style={{ width: "80%", marginBottom: 15 }}
-              onClick = {() => { if (this.state.depositEth > 0 && this.state.depositSbt > 0) { this.deposit() } }}>
-                Deposit
+          <div>{
+            (!this.state.poolRunning) ?
+              <button class="btn btn-primary disabled" style={{ width: "100%", marginBottom: 15,  marginTop: 40, backgroundColor: "#10154D" }}>
+                No Pool Created
               </button>
+              :
+              <button class="btn btn-primary" style={{ width: "100%", marginBottom: 15, marginTop: 40, backgroundColor: "#10154D" }}
+                onClick={() => { if (this.state.depositEth > 0 && this.state.depositSbt > 0) { this.deposit() } }}>
+                Deposit
+              </button>}
+          </div>
+
 
         </div>
 
@@ -615,14 +657,14 @@ class App extends Component {
           </div>
 
           <div>{(this.state.poolRunning) ?
-            <button class="btn btn-primary" style={{ width: "80%", marginBottom: 15, marginTop: 15 }} disable="false" onClick={() => {
+            <button class="btn btn-primary" style={{ width: "100%", marginBottom: 15, marginTop: 40, backgroundColor: "#10154D" }} onClick={() => {
               if (this.weiToToken(this.state.lpDetail.providedEth) > 0) {
                 this.withdraw()
               }
             }
             }>
               Withdraw
-            </button> : <button class="btn btn-primary" style={{ width: "80%", marginBottom: 15, marginTop: 15 }} disabled="true">
+            </button> : <button class="btn btn-primary disabled" style={{ width: "100%", marginBottom: 15,  marginTop: 40, backgroundColor: "#10154D" }}>
               No Pool Created
             </button>
           }</div>

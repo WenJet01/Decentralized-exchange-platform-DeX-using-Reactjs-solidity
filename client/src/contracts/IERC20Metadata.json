@@ -765,13 +765,8 @@
     "version": "0.8.13+commit.abaa5c0e.Emscripten.clang"
   },
   "networks": {},
-<<<<<<< Updated upstream
-  "schemaVersion": "3.4.4",
-  "updatedAt": "2022-04-10T07:15:09.255Z",
-=======
   "schemaVersion": "3.4.5",
   "updatedAt": "2022-04-10T07:52:28.210Z",
->>>>>>> Stashed changes
   "devdoc": {
     "details": "Interface for the optional metadata functions from the ERC20 standard. _Available since v4.1._",
     "kind": "dev",
