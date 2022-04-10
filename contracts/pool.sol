@@ -22,8 +22,8 @@ contract pool {
     bool oneTime = true;
 
     //addDeposit variable
-    uint public sbtRatio;
-    uint public ethRatio;
+    uint256 public sbtRatio;
+    uint256 public ethRatio;
 
     event PoolInitialised(
         address account,
@@ -93,18 +93,25 @@ contract pool {
         return address(this).balance;
     }
 
-    function withdrawLiquity(uint256 percent, uint256 ownSBT) external payable {
+    function withdrawLiquity(
+        uint256 percent,
+        uint256 providedSBT,
+        uint256 providedETH,
+        uint256 reward
+    ) external payable {
         // require(msg.sender == owner, "Only owner can withdraw funds");
         // require(amount <= balance[destAddr], "Insufficient funds");
 
-        uint256 sbtWithdraw = (ownSBT * percent) / 100;
+        uint256 sbtWithdraw = ((providedSBT * percent) / 10) + (reward * 10);
         //SBT
         sbt.transfer(payable(msg.sender), sbtWithdraw);
         sbtBalance -= sbtWithdraw;
         //ETH
-        uint256 withdrawETH = (address(this).balance * percent) / 100;
+        uint256 withdrawETH = (providedETH * percent) / 1000;
         payable(msg.sender).transfer(withdrawETH);
 
+        oneTime = true;
+        calculateConstant();
         lp.minus(msg.sender, withdrawETH, sbtWithdraw);
     }
 
@@ -185,25 +192,31 @@ contract pool {
     }
 
     //addDeposit
-    function calSBT(uint ethAmount) public checkPool returns(uint returnSBT){
-        sbtRatio = sbtBalance/address(this).balance;
+    function calSBT(uint256 ethAmount)
+        public
+        checkPool
+        returns (uint256 returnSBT)
+    {
+        sbtRatio = sbtBalance / address(this).balance;
         return ethAmount * sbtRatio;
     }
 
     //why 0
-    function calETH(uint sbtAmount) public checkPool returns(uint returnETH){
-        ethRatio = address(this).balance/sbtBalance;
+    function calETH(uint256 sbtAmount)
+        public
+        checkPool
+        returns (uint256 returnETH)
+    {
+        ethRatio = address(this).balance / sbtBalance;
         return sbtAmount * ethRatio;
     }
 
     //pool why sbt no change
-    function deposit(uint sbtDeposit) external payable{
+    function deposit(uint256 sbtDeposit) external payable {
         payable(address(this)).transfer(msg.value);
         sbt.transferFrom(msg.sender, address(this), sbtDeposit);
         sbtBalance += sbtDeposit;
         oneTime = true;
         calculateConstant();
     }
-  
-    
 }
