@@ -75,11 +75,13 @@ class App extends Component {
 
     await this.getSbTokenContract();
 
-    await this.getLpTokenContract();
+
 
     await this.getPoolContract();
 
+    await this.getLpTokenContract();
 
+    //alert(await this.state.lpTokenContract.methods.getArray().call());
 
     //await this.checkPoolRunning();
 
@@ -154,8 +156,8 @@ class App extends Component {
         deployedNetwork && deployedNetwork.address,
       );
 
-      const sbtBalance = await instance.methods.sbtBalance().call();
-      const ethBalance = await instance.methods.getBalanceEth().call();
+      // const sbtBalance = await instance.methods.sbtBalance().call();
+      // const ethBalance = await instance.methods.getBalanceEth().call();
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
@@ -221,7 +223,9 @@ class App extends Component {
     const { 0: lpToken, 1: providedSbt, 2: providedEth, 3: reward } = lp;
     lp = { lpToken, providedSbt, providedEth, reward };
 
-    this.setState({ lpDetail: lp });
+    const totalLp = await this.state.lpTokenContract.methods.totalSupply().call();
+
+    this.setState({ lpDetail: lp, totalLp: totalLp });
   }
 
 
@@ -242,19 +246,22 @@ class App extends Component {
 
 
 
-    const sbtBalance = await this.state.poolContract.methods.sbtBalance().call();
-    const ethBalance = await this.state.poolContract.methods.getBalanceEth().call();
+
+
 
     //const sbtBalance = '10000';
     //const ethBalance =  '1000000000';
 
-    this.setState({ poolSbtBalance: this.weiToToken(sbtBalance), poolEthBalance: this.weiToToken(ethBalance) }, () => this.checkPoolRunning());
+    this.getPoolValue();
+    this.getLpDetail();
   };
 
-  checkPoolRunning = async () => {
-    const deployed = await this.state.poolContract.methods.isRunning().call();
+  getPoolValue = async () => {
+    const deployed = await this.state.poolContract.methods.isRunning().call()
+    const sbtBalance = await this.state.poolContract.methods.sbtBalance().call();
+    const ethBalance = await this.state.poolContract.methods.getBalanceEth().call();
 
-    this.setState({ poolRunning: deployed }, () => this.getLpDetail());
+    this.setState({ poolRunning: deployed, poolSbtBalance: this.weiToToken(sbtBalance), poolEthBalance: this.weiToToken(ethBalance) });
   }
 
   estimateSbt = async () => {
@@ -624,10 +631,13 @@ class App extends Component {
         {/* withdraw */}
         <div className="divBox">
           <h3><BsBoxArrowDown style={{ fontSize: 38, marginTop: -5 }} /> Withdraw</h3>
+          <div>Total LP Token Supply: {this.weiToToken(this.state.totalLp.toString())}</div>
+          <div></div>
           <div>LP details</div>
-          <div>providedEth : {this.weiToToken(this.state.lpDetail.providedEth.toString())}</div>
-          <div>providedSbt : {this.weiToToken(this.state.lpDetail.providedSbt.toString())}</div>
-          <div>reward : {this.weiToToken(this.state.lpDetail.reward.toString())}</div>
+          <div>LP Token : {this.weiToToken(this.state.lpDetail.lpToken.toString())}</div>
+          <div>Available Eth : {this.weiToToken(this.state.lpDetail.providedEth.toString())}</div>
+          <div>Available Sbt : {this.weiToToken(this.state.lpDetail.providedSbt.toString())}</div>
+          <div>Available reward : {this.weiToToken(this.state.lpDetail.reward.toString())}</div>
           <br></br>
           <div class="range">
             <div class="sliderValue">
@@ -637,7 +647,7 @@ class App extends Component {
               <div class="value left">0%</div>
               <input type="range" value={this.state.sliderValue} min="0" max="100" steps="1" disabled={this.state.percentSlide}
                 onChange={(e) => {
-                  if (this.weiToToken(this.state.lpDetail.providedEth) <= 0) {
+                  if (this.weiToToken(this.state.lpDetail.providedEth.toString()) <= 0) {
                     this.setState({ percentSlide: true });
                   }
                   else {

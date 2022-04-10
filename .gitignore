@@ -1,6 +1,2 @@
 
-client/src/contracts/ERC20.json
-client/src/contracts/IERC20.json
-client/src/contracts/ERC20.json
-*.json
 *.json
