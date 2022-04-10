@@ -171,7 +171,8 @@ contract pool {
 
     //addDeposit
     function calSBT(uint ethAmount) public checkPool returns(uint returnSBT){
-        sbtRatio = ((sbtBalance) * 10**18 /(address(this).balance));
+
+        sbtRatio = ((sbtBalance)*10**18/(address(this).balance));
         return ethAmount * sbtRatio;
     }
 
