@@ -332,13 +332,13 @@ class App extends Component {
       pool.abi,
       deployedNetwork && deployedNetwork.address,
     );
-    const sbtBalance = await instance.methods.sbtBalance().call();
     // this.setState({ sliderValue: this.weiToToken(sbtBalance) });
     const SBTamount = (this.weiToToken(this.state.lpDetail.providedSbt.toString()) * this.state.percentSlide) / 100;
+
     await this.state.sbTokenContract.methods.approve(this.state.poolContract.options.address, this.tokenToWei(SBTamount.toString())).send({ from: this.state.accounts[0] });
-    await this.state.poolContract.methods.withdrawLiquity(this.state.sliderValue, sbtBalance).send({ from: this.state.accounts[0] });
-    this.state.sliderValue = 0;
+    await this.state.poolContract.methods.withdrawLiquity(this.state.sliderValue, this.state.lpDetail.providedEth, this.state.lpDetail.providedSbt, this.state.lpDetail.reward).send({ from: this.state.accounts[0] });
     this.setState({ withdrawETH: 0, withdrawSBT: 0, withdrawReward: 0 }, () => this.checkPoolRunning());
+    this.state.sliderValue = 0;
   }
 
   render() {
@@ -566,8 +566,16 @@ class App extends Component {
             </div>
 
             <input type="number" class="form-control" placeholder="Amount of Ether" step="0.00001" min="0.0001" style={{ width: "80%" }}
-              value={this.state.depositEth} onChange={(e) => { this.setState({ depositEth: e.target.value }, () => { if (this.state.depositEth != 0) { this.checkSbt() } }) }}>
+              value={this.state.depositEth} onChange={(e) => { 
+                {
+                  if(e.target.value.length <= 6){
+                      this.setState({depositEth: e.target.value}, ()=> { if (this.state.depositEth != 0) { this.checkSbt()}})
+                  }else{
+                    this.setState({ depositSbt: "" })
+                  }
+                } 
 
+              }}>
 
             </input>
           </div>
@@ -581,7 +589,15 @@ class App extends Component {
             </div>
 
             <input type="number" class="form-control" placeholder="Amount of SbtToken" step="0.00001" min="0.0001" style={{ width: "80%" }}
-              value={this.state.depositSbt} onChange={(e) => { this.setState({ depositSbt: e.target.value }, () => { if (this.state.depositSbt != 0) { this.checkEth() } }) }}>
+              value={this.state.depositSbt} onChange={(e) => { 
+                {
+                  if(e.target.value.length <= 6){
+                    this.setState({depositSbt: e.target.value}, ()=> { if (this.state.depositSbt != 0) { this.checkEth()}})
+                  }else{
+                    this.setState({ depositEth: "" })
+                  }
+                }
+              }}>
 
             </input>
           </div>
