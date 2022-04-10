@@ -334,13 +334,13 @@ class App extends Component {
       pool.abi,
       deployedNetwork && deployedNetwork.address,
     );
-    const sbtBalance = await instance.methods.sbtBalance().call();
     // this.setState({ sliderValue: this.weiToToken(sbtBalance) });
     const SBTamount = (this.weiToToken(this.state.lpDetail.providedSbt.toString()) * this.state.percentSlide) / 100;
+
     await this.state.sbTokenContract.methods.approve(this.state.poolContract.options.address, this.tokenToWei(SBTamount.toString())).send({ from: this.state.accounts[0] });
-    await this.state.poolContract.methods.withdrawLiquity(this.state.sliderValue, sbtBalance).send({ from: this.state.accounts[0] });
-    this.state.sliderValue = 0;
+    await this.state.poolContract.methods.withdrawLiquity(this.state.sliderValue, this.state.lpDetail.providedEth, this.state.lpDetail.providedSbt, this.state.lpDetail.reward).send({ from: this.state.accounts[0] });
     this.setState({ withdrawETH: 0, withdrawSBT: 0, withdrawReward: 0 }, () => this.checkPoolRunning());
+    this.state.sliderValue = 0;
   }
 
   render() {
