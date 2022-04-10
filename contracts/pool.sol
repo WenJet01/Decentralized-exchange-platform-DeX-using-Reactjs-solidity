@@ -229,4 +229,8 @@ contract pool {
         oneTime = true;
         calculateConstant();
     }
+<<<<<<< Updated upstream
+=======
+    
+>>>>>>> Stashed changes
 }
