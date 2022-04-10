@@ -74,10 +74,10 @@ contract pool {
         sbtBalance += sbtSupply;
         calculateConstant();
         isRunning = true;
+        lp.addSupply(k);
 
         //emit PoolInitialised(msg.sender, address(sbt), sbtSupply, msg.value);
 
-        lp.create(msg.sender, msg.value, sbtSupply);
     }
 
     //get the 99.7% of sbt (used for swap)
@@ -94,43 +94,7 @@ contract pool {
         return address(this).balance;
     }
 
-    function withdrawLiquity(
-        uint256 percent,
-        uint256 providedSBT,
-        uint256 providedETH,
-        uint256 reward
-    ) external payable {
-        // require(msg.sender == owner, "Only owner can withdraw funds");
-        // require(amount <= balance[destAddr], "Insufficient funds");
-
-        uint256 sbtWithdraw = ((((providedSBT * percent) / 10) +
-            (reward * 10)) * 10**18) / 10**18;
-        //SBT
-        sbt.transfer(payable(msg.sender), sbtWithdraw);
-        sbtBalance -= sbtWithdraw;
-        //ETH
-        uint256 withdrawETH = (((providedETH * percent) / 1000) * 10**18) /
-            10**18;
-        payable(msg.sender).transfer(withdrawETH);
-
-        oneTime = true;
-        calculateConstant();
-        lp.minus(msg.sender, withdrawETH, sbtWithdraw);
-    }
-
-    function calcReward(uint amount) internal{
-        address[] memory provider = lp.getArray();  
-
-        for(uint i=0 ;i < provider.length; i++){
-            uint providedEth = lp.get(provider[i]).providedEth;
-            uint providedSbt = lp.get(provider[i]).providedSbt;
-            
-            uint reward = (amount * ((providedEth+providedSbt)* 10**18/(sbtBalance+address(this).balance))) / 10**18;
-
-            lp.addReward(provider[i], reward);
-            
-        }
-    }
+    
 
 
 
@@ -188,7 +152,7 @@ contract pool {
         checkBalance
     {
         sbtReserved += getReservedSbt(amountSbt);
-        calcReward(getReservedSbt(amountSbt));
+        //calcReward(getReservedSbt(amountSbt));
         payable(address(this)).transfer(msg.value);
         sbt.transfer(msg.sender, getAmount);
         sbtBalance -= getAmount;
@@ -199,7 +163,7 @@ contract pool {
         checkBalance2(amountSbt)
     {
         sbtReserved += getReservedSbt(amountSbt);
-        calcReward(getReservedSbt(amountSbt));
+        //calcReward(getReservedSbt(amountSbt));
         sbt.transferFrom(msg.sender, address(this), amountSbt);
         payable(msg.sender).transfer(amountEth);
         sbtBalance += getActualSbt(amountSbt);
@@ -229,11 +193,56 @@ contract pool {
         sbt.transferFrom(msg.sender, address(this), sbtDeposit);
         sbtBalance += sbtDeposit;
         calculateConstant();
-        if(lp.get(msg.sender).providedEth == 0){
-            lp.create(msg.sender, msg.value, sbtDeposit);
-        }else{
-            lp.update(msg.sender, msg.value, sbtDeposit);
-        }
+        lp.addSupply(k);
+        lp.update(msg.sender, sbtDeposit, sbtBalance);
         
     }
+
+    //withdraw
+    function getAmountWithdraw(address sender)public view returns(uint lpToken, uint sbtWithdraw, uint ethWithdraw, uint sbtReward){
+        lpToken = lp.get(sender);
+
+        sbtWithdraw = (sbtBalance*lpToken)/k;
+        ethWithdraw = (address(this).balance*lpToken)/k;
+        sbtReward = (sbtReserved*lpToken)/k;
+
+    }
+
+    function withdrawLiquity(
+        uint256 percent
+
+    ) external payable {
+        // require(msg.sender == owner, "Only owner can withdraw funds");
+        // require(amount <= balance[destAddr], "Insufficient funds");
+
+        (uint lpToken, uint sbtAvailable, uint ethAvailable, uint rewardAvailable) = getAmountWithdraw(msg.sender);
+
+        uint256 sbtWithdraw = ((sbtAvailable * percent)/100) +
+            ((rewardAvailable * percent)/100);
+        //SBT
+        sbt.transfer(payable(msg.sender), sbtWithdraw);
+        sbtBalance -= ((sbtAvailable * percent)/100);
+        sbtReserved -= ((rewardAvailable * percent)/100);
+        //ETH
+        uint256 withdrawETH = ((ethAvailable * percent) / 100);
+        payable(msg.sender).transfer(withdrawETH);
+
+        calculateConstant();
+        lp.addSupply(k);
+        lp.minus(msg.sender, ((lpToken*percent)/100) );
+    }
+
+    // function calcReward(uint amount) internal{
+    //     address[] memory provider = lp.getArray();  
+
+    //     for(uint i=0 ;i < provider.length; i++){
+    //         uint providedEth = lp.get(provider[i]).providedEth;
+    //         uint providedSbt = lp.get(provider[i]).providedSbt;
+            
+    //         uint reward = (amount * ((providedEth+providedSbt)* 10**18/(sbtBalance+address(this).balance))) / 10**18;
+
+    //         lp.addReward(provider[i], reward);
+            
+    //     }
+    // }
 }

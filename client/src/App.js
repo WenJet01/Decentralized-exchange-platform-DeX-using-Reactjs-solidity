@@ -48,7 +48,7 @@ class App extends Component {
     withdrawSBT: 0.0000000000,
     withdrawReward: 0.0000000000,
 
-    lpDetail: { providedEth: 0, providedSbt: 0, reward: 0 }
+    lpDetail: { providedEth: 0, providedSbt: 0, reward: 0, lpToken:0 }
   };
 
   componentDidMount = async () => {
@@ -73,11 +73,13 @@ class App extends Component {
 
     await this.getSbTokenContract();
 
-    await this.getLpTokenContract();
+    
 
     await this.getPoolContract();
 
-    alert(await this.state.lpTokenContract.methods.getArray().call());
+    await this.getLpTokenContract();
+
+    //alert(await this.state.lpTokenContract.methods.getArray().call());
 
     //await this.checkPoolRunning();
 
@@ -215,7 +217,9 @@ class App extends Component {
   }
 
   getLpDetail = async () => {
-    const lp = await this.state.lpTokenContract.methods.get(this.state.accounts[0]).call();
+    var lp = await this.state.poolContract.methods.getAmountWithdraw(this.state.accounts[0]).call();
+    const {0:lpToken, 1:providedSbt, 2:providedEth, 3:reward} = lp;
+    lp = {lpToken, providedSbt, providedEth, reward};
 
     this.setState({ lpDetail: lp });
   }
@@ -337,10 +341,10 @@ class App extends Component {
     // this.setState({ sliderValue: this.weiToToken(sbtBalance) });
     const SBTamount = (this.weiToToken(this.state.lpDetail.providedSbt.toString()) * this.state.percentSlide) / 100;
 
-    await this.state.sbTokenContract.methods.approve(this.state.poolContract.options.address, this.tokenToWei(SBTamount.toString())).send({ from: this.state.accounts[0] });
-    await this.state.poolContract.methods.withdrawLiquity(this.state.sliderValue, this.state.lpDetail.providedEth, this.state.lpDetail.providedSbt, this.state.lpDetail.reward).send({ from: this.state.accounts[0] });
-    this.setState({ withdrawETH: 0, withdrawSBT: 0, withdrawReward: 0 }, () => this.checkPoolRunning());
-    this.state.sliderValue = 0;
+    //await this.state.sbTokenContract.methods.approve(this.state.poolContract.options.address, this.tokenToWei(SBTamount.toString())).send({ from: this.state.accounts[0] });
+    await this.state.poolContract.methods.withdrawLiquity(this.state.sliderValue).send({ from: this.state.accounts[0] });
+    this.setState({ withdrawETH: 0, withdrawSBT: 0, withdrawReward: 0, sliderValue : 0 });
+    //this.state.sliderValue = 0;
   }
 
   render() {
@@ -569,9 +573,10 @@ class App extends Component {
         <div className="divBox">
           <h3><BsBoxArrowDown style={{ fontSize: 38, marginTop: -5 }} /> Withdraw</h3>
           <div>LP details</div>
-          <div>providedEth : {this.weiToToken(this.state.lpDetail.providedEth.toString())}</div>
-          <div>providedSbt : {this.weiToToken(this.state.lpDetail.providedSbt.toString())}</div>
-          <div>reward : {this.weiToToken(this.state.lpDetail.reward.toString())}</div>
+          <div>LP Token : {this.weiToToken(this.state.lpDetail.lpToken.toString())}</div>
+          <div>Available Eth : {this.weiToToken(this.state.lpDetail.providedEth.toString())}</div>
+          <div>Available Sbt : {this.weiToToken(this.state.lpDetail.providedSbt.toString())}</div>
+          <div>Available reward : {this.weiToToken(this.state.lpDetail.reward.toString())}</div>
           <br></br>
           <div class="range">
             <div class="sliderValue">
@@ -581,7 +586,7 @@ class App extends Component {
               <div class="value left">0%</div>
               <input type="range" value={this.state.sliderValue} min="0" max="100" steps="1" disabled={this.state.percentSlide}
                 onChange={(e) => {
-                  if (this.weiToToken(this.state.lpDetail.providedEth) <= 0) {
+                  if (this.weiToToken(this.state.lpDetail.providedEth.toString()) <= 0) {
                     this.setState({ percentSlide: true });
                   }
                   else {
