@@ -4,11 +4,7 @@ pragma solidity >=0.5.0 <0.9.0;
 contract LpToken {
     uint public totalSupply;
 
-    struct providers{
-        uint token;
-        uint reward;
-    }
-    mapping(address => providers) public data;
+    mapping(address => uint) public data;
     
 
 // babylonian method (https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method)
@@ -33,20 +29,21 @@ contract LpToken {
         totalSupply = sqrt(supply);
     }
 
+   
     function get(address _add)public view returns (uint){
-        return data[_add].token;
+        return data[_add];
     }
 
     function update(address _add, uint sbtProvided, uint totalSbt) public {
         uint lp = calcLp( sbtProvided, totalSbt);
-        data[_add].token += lp;
+        data[_add] += lp;
 
     }
 
     function minus(address _add, uint lpToken) public {
-        data[_add].token -= lpToken;
+        data[_add] -= lpToken;
 
     }
 
-    
+       
 }
