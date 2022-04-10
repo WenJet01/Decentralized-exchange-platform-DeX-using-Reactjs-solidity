@@ -194,23 +194,6 @@ contract pool {
     }
 
     //addDeposit
-<<<<<<< Updated upstream
-    function calSBT(uint256 ethAmount)
-        public
-        checkPool
-        returns (uint256 returnSBT)
-    {
-        sbtRatio = ((sbtBalance / (address(this).balance)) * 10**18);
-        return ethAmount * sbtRatio;
-    }
-
-    function calETH(uint256 sbtAmount)
-        public
-        checkPool
-        returns (uint256 returnETH)
-    {
-        ethRatio = (((address(this).balance) * 10**18) / sbtBalance);
-=======
     function calSBT(uint ethAmount) public checkPool returns(uint returnSBT){
         sbtRatio = ((sbtBalance) * 10**18 /(address(this).balance));
         return ethAmount * sbtRatio;
@@ -218,7 +201,6 @@ contract pool {
 
     function calETH(uint sbtAmount) public checkPool returns(uint returnETH){
         ethRatio = ((address(this).balance) *10**18) /sbtBalance;
->>>>>>> Stashed changes
         return sbtAmount * ethRatio;
     }
 
