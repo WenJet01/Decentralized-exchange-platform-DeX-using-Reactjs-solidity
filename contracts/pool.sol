@@ -155,7 +155,7 @@ contract pool {
         //calcReward(getReservedSbt(amountSbt));
         payable(address(this)).transfer(msg.value);
         sbt.transfer(msg.sender, getAmount);
-        sbtBalance -= getAmount;
+        sbtBalance -= amountSbt;
     }
 
     function tokenSbSwapTokenEth(uint256 amountSbt, uint256 amountEth)
@@ -170,21 +170,13 @@ contract pool {
     }
 
     //addDeposit
-    function calSBT(uint256 ethAmount)
-        public
-        checkPool
-        returns (uint256 returnSBT)
-    {
-        sbtRatio = ((sbtBalance / (address(this).balance)) * 10**18);
+    function calSBT(uint ethAmount) public checkPool returns(uint returnSBT){
+        sbtRatio = ((sbtBalance) * 10**18 /(address(this).balance));
         return ethAmount * sbtRatio;
     }
 
-    function calETH(uint256 sbtAmount)
-        public
-        checkPool
-        returns (uint256 returnETH)
-    {
-        ethRatio = (((address(this).balance) * 10**18) / sbtBalance);
+    function calETH(uint sbtAmount) public checkPool returns(uint returnETH){
+        ethRatio = ((address(this).balance) *10**18) /sbtBalance;
         return sbtAmount * ethRatio;
     }
 
@@ -232,17 +224,6 @@ contract pool {
         lp.minus(msg.sender, ((lpToken*percent)/100) );
     }
 
-    // function calcReward(uint amount) internal{
-    //     address[] memory provider = lp.getArray();  
 
-    //     for(uint i=0 ;i < provider.length; i++){
-    //         uint providedEth = lp.get(provider[i]).providedEth;
-    //         uint providedSbt = lp.get(provider[i]).providedSbt;
-            
-    //         uint reward = (amount * ((providedEth+providedSbt)* 10**18/(sbtBalance+address(this).balance))) / 10**18;
-
-    //         lp.addReward(provider[i], reward);
-            
-    //     }
-    // }
+    
 }
