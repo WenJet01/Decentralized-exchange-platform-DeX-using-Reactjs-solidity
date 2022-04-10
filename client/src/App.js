@@ -47,9 +47,10 @@ class App extends Component {
     withdrawETH: 0.0000000000,
     withdrawSBT: 0.0000000000,
     withdrawReward: 0.0000000000,
-    totalLp:0,
+    lpAmount: 0.0000000000,
+    totalLp: 0,
 
-    lpDetail: { providedEth: 0, providedSbt: 0, reward: 0, lpToken:0 }
+    lpDetail: { providedEth: 0, providedSbt: 0, reward: 0, lpToken: 0 }
   };
 
   componentDidMount = async () => {
@@ -74,7 +75,7 @@ class App extends Component {
 
     await this.getSbTokenContract();
 
-    
+
 
     await this.getPoolContract();
 
@@ -160,7 +161,7 @@ class App extends Component {
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({ poolContract: instance, }, ()=>this.getPoolValue());
+      this.setState({ poolContract: instance, }, () => this.getPoolValue());
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -219,8 +220,8 @@ class App extends Component {
 
   getLpDetail = async () => {
     var lp = await this.state.poolContract.methods.getAmountWithdraw(this.state.accounts[0]).call();
-    const {0:lpToken, 1:providedSbt, 2:providedEth, 3:reward} = lp;
-    lp = {lpToken, providedSbt, providedEth, reward};
+    const { 0: lpToken, 1: providedSbt, 2: providedEth, 3: reward } = lp;
+    lp = { lpToken, providedSbt, providedEth, reward };
 
     const totalLp = await this.state.lpTokenContract.methods.totalSupply().call();
 
@@ -245,9 +246,9 @@ class App extends Component {
 
 
 
-    
-    
-    
+
+
+
     //const sbtBalance = '10000';
     //const ethBalance =  '1000000000';
 
@@ -343,11 +344,10 @@ class App extends Component {
       deployedNetwork && deployedNetwork.address,
     );
     // this.setState({ sliderValue: this.weiToToken(sbtBalance) });
-    const SBTamount = (this.weiToToken(this.state.lpDetail.providedSbt.toString()) * this.state.percentSlide) / 100;
 
     //await this.state.sbTokenContract.methods.approve(this.state.poolContract.options.address, this.tokenToWei(SBTamount.toString())).send({ from: this.state.accounts[0] });
     await this.state.poolContract.methods.withdrawLiquity(this.state.sliderValue).send({ from: this.state.accounts[0] });
-    this.setState({ withdrawETH: 0, withdrawSBT: 0, withdrawReward: 0, sliderValue : 0 });
+    this.setState({ withdrawETH: 0, withdrawSBT: 0, withdrawReward: 0, sliderValue: 0 });
     //this.state.sliderValue = 0;
   }
 
@@ -576,14 +576,14 @@ class App extends Component {
             </div>
 
             <input type="number" class="form-control" placeholder="Amount of Ether" step="0.00001" min="0.0001" style={{ width: "80%" }}
-              value={this.state.depositEth} onChange={(e) => { 
+              value={this.state.depositEth} onChange={(e) => {
                 {
-                  if(e.target.value.length <= 6){
-                      this.setState({depositEth: e.target.value}, ()=> { if (this.state.depositEth != 0) { this.checkSbt()}})
-                  }else{
+                  if (e.target.value.length <= 6) {
+                    this.setState({ depositEth: e.target.value }, () => { if (this.state.depositEth != 0) { this.checkSbt() } })
+                  } else {
                     this.setState({ depositSbt: "" })
                   }
-                } 
+                }
 
               }}>
 
@@ -599,11 +599,11 @@ class App extends Component {
             </div>
 
             <input type="number" class="form-control" placeholder="Amount of SbtToken" step="0.00001" min="0.0001" style={{ width: "80%" }}
-              value={this.state.depositSbt} onChange={(e) => { 
+              value={this.state.depositSbt} onChange={(e) => {
                 {
-                  if(e.target.value.length <= 6){
-                    this.setState({depositSbt: e.target.value}, ()=> { if (this.state.depositSbt != 0) { this.checkEth()}})
-                  }else{
+                  if (e.target.value.length <= 6) {
+                    this.setState({ depositSbt: e.target.value }, () => { if (this.state.depositSbt != 0) { this.checkEth() } })
+                  } else {
                     this.setState({ depositEth: "" })
                   }
                 }
@@ -614,7 +614,7 @@ class App extends Component {
 
           <div>{
             (!this.state.poolRunning) ?
-              <button class="btn btn-primary disabled" style={{ width: "100%", marginBottom: 15,  marginTop: 40, backgroundColor: "#10154D" }}>
+              <button class="btn btn-primary disabled" style={{ width: "100%", marginBottom: 15, marginTop: 40, backgroundColor: "#10154D" }}>
                 No Pool Created
               </button>
               :
@@ -655,7 +655,9 @@ class App extends Component {
                     this.setState({ sliderValue: e.target.value })
                     const ETHamount = (this.weiToToken(this.state.lpDetail.providedEth.toString()) * e.target.value) / 100;
                     const SBTamount = (this.weiToToken(this.state.lpDetail.providedSbt.toString()) * e.target.value) / 100;
-                    this.setState({ withdrawETH: ETHamount, withdrawSBT: SBTamount });
+                    const rewardAmt = (this.weiToToken(this.state.lpDetail.reward.toString()) * e.target.value) / 100;
+                    const lpAmount = this.weiToToken(this.state.lpDetail.lpToken.toString()) * e.target.value / 100;
+                    this.setState({ withdrawETH: ETHamount, withdrawSBT: SBTamount, withdrawLP: lpAmount, withdrawReward: rewardAmt });
                   }
                 }
                 }></input>
@@ -664,6 +666,7 @@ class App extends Component {
           </div>
           <br></br>
           <div class="withdrawBox">
+            <div>LP Token : {this.state.withdrawLP}</div>
             <div>ETH : {this.state.withdrawETH}</div>
             <div>SBT : {this.state.withdrawSBT}</div>
             <div>Reward : {this.state.withdrawReward}</div>
@@ -677,7 +680,7 @@ class App extends Component {
             }
             }>
               Withdraw
-            </button> : <button class="btn btn-primary disabled" style={{ width: "100%", marginBottom: 15,  marginTop: 40, backgroundColor: "#10154D" }}>
+            </button> : <button class="btn btn-primary disabled" style={{ width: "100%", marginBottom: 15, marginTop: 40, backgroundColor: "#10154D" }}>
               No Pool Created
             </button>
           }</div>
