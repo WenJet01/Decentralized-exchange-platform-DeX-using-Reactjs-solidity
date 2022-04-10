@@ -585,8 +585,8 @@ class App extends Component {
                   }
                 }
 
-              }}>
-
+              }
+                  
             </input>
           </div>
 
