@@ -304,7 +304,7 @@ class App extends Component {
   checkSbt = async() => {
     const checkSbt = await this.state.poolContract.methods.calSBT(this.tokenToWei(this.state.depositEth.toString())).call()
 
-    this.setState({ depositSbt: this.weiToToken(checkSbt) });
+    this.setState({ depositSbt: (this.weiToToken(checkSbt)) / 10**18 });
 
   }
 
@@ -312,7 +312,7 @@ class App extends Component {
 
     const checkEth = await this.state.poolContract.methods.calETH(this.tokenToWei(this.state.depositSbt.toString())).call()
 
-    this.setState({ depositEth: this.weiToToken(checkEth) });
+    this.setState({ depositEth: (this.weiToToken(checkEth)) / 10**18 });
 
   }
 
