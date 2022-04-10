@@ -29,11 +29,7 @@ contract LpToken {
         totalSupply = sqrt(supply);
     }
 
-    function create(address _add, uint sbtProvided, uint totalSbt) public{
-        uint lp = calcLp(sbtProvided, totalSbt);
-        data[_add] = lp;
-    }
-
+   
     function get(address _add)public view returns (uint){
         return data[_add];
     }
@@ -49,31 +45,5 @@ contract LpToken {
 
     }
 
-    // function del(address _add)public {
-    //     bool found = false;
-    //     delete data[_add];
-
-    //     for(uint i=0 ;i < liqProviders.length; i++){
-    //         if(liqProviders[i] == _add){
-    //             for(uint j=i ;j < liqProviders.length; j++){
-                    
-    //                 if(j+1 == liqProviders.length){
-    //                     liqProviders.pop();
-    //                 }else{
-    //                     liqProviders[j] = liqProviders[j+1];
-    //                 }
-
-    //             }
-    //             found = true;
-    //         }
-
-    //         if(found){
-    //             break;
-    //         }
-            
-    //     }
-        
-    // }
-
-    
+       
 }

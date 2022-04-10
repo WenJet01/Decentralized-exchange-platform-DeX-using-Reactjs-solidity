@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import SimpleStorageContract from "./contracts/SimpleStorage.json";
 import SbToken from "./contracts/SbToken.json"
 import LpToken from "./contracts/LpToken.json"
 import pool from "./contracts/pool.json"
@@ -49,6 +48,7 @@ class App extends Component {
     withdrawReward: 0.0000000000,
     lpAmount: 0.0000000000,
     totalLp: 0,
+    withdrawLp: 0,
 
     lpDetail: { providedEth: 0, providedSbt: 0, reward: 0, lpToken: 0 }
   };
@@ -75,19 +75,9 @@ class App extends Component {
 
     await this.getSbTokenContract();
 
-
-
     await this.getPoolContract();
 
     await this.getLpTokenContract();
-
-    //alert(await this.state.lpTokenContract.methods.getArray().call());
-
-    //await this.checkPoolRunning();
-
-    //await this.getSwapContract();
-
-    //await this.runSimpleStorage();
 
     //detect metamask account change
     window.ethereum.on('accountsChanged', (accounts) => this.setState({ accounts: accounts }, () => this.getLpDetail()));
@@ -102,48 +92,6 @@ class App extends Component {
   weiToToken = (n) => {
     return this.state.web3.utils.fromWei(n, 'ether');
   }
-
-  runSimpleStorage = async () => {
-    try {
-      // Get network provider and web3 instance.
-      const web3 = await getWeb3();
-
-      // Use web3 to get the user's accounts.
-      const accounts = await web3.eth.getAccounts();
-
-      // Get the contract instance.
-      const networkId = await web3.eth.net.getId();
-      const deployedNetwork = SimpleStorageContract.networks[networkId];
-      const instance = new web3.eth.Contract(
-        SimpleStorageContract.abi,
-        deployedNetwork && deployedNetwork.address,
-      );
-
-
-      // Set web3, accounts, and contract to the state, and then proceed with an
-      // example of interacting with the contract's methods.
-      this.setState({ web3, accounts, contract: instance }, this.runExample);
-    } catch (error) {
-      // Catch any errors for any of the above operations.
-      alert(
-        `Failed to load web3, accounts, or contract. Check console for details.`,
-      );
-      console.error(error);
-    }
-  }
-
-  runExample = async () => {
-    const { accounts, contract } = this.state;
-
-    // Stores a given value, 5 by default.
-    await contract.methods.set(5).send({ from: accounts[0] });
-
-    // Get the value from the contract to prove it worked.
-    const response = await contract.methods.get().call();
-
-    // Update state with the result.
-    this.setState({ storageValue: response });
-  };
 
   getPoolContract = async () => {
     try {
@@ -232,25 +180,10 @@ class App extends Component {
 
   deployPool = async () => {
 
-
-    // if(this.state.accounts[0] != await this.state.poolContract.methods.owner().call()){
-    //   alert("Only the owner can deploy the pool.")
-    // }
-
-    //const response = await contract.methods.balanceOf(accounts[0]).call();
     await this.state.sbTokenContract.methods.approve(this.state.poolContract.options.address, this.tokenToWei(this.state.setUpSbt.toString())).send({ from: this.state.accounts[0] });
 
     await this.state.poolContract.methods.settingUp(this.tokenToWei(this.state.setUpSbt.toString())).send({ value: this.tokenToWei(this.state.setUpEth.toString()), from: this.state.accounts[0] }).on('transactionHash', function () { });
-    //await poolContract.methods.settingUp(this.tokenToWei(this.state.setUpSbt.toString())).send({ value: this.tokenToWei(this.state.setUpEth.toString()), from: accounts[0] }).on('transactionHash', function () { });
-    //await sbTokenContract.methods.transfer(poolContract.options.address, this.tokenToWei(this.state.setUpSbt.toString())).send({ from: accounts[0] });
-
-
-
-
-
-
-    //const sbtBalance = '10000';
-    //const ethBalance =  '1000000000';
+    
 
     this.getPoolValue();
     this.getLpDetail();
@@ -307,6 +240,7 @@ class App extends Component {
       });
     }
 
+    window.location.reload(false);
   }
 
   changeButton = async () => {
@@ -332,6 +266,8 @@ class App extends Component {
     await this.state.sbTokenContract.methods.approve(this.state.poolContract.options.address, this.tokenToWei(this.state.depositSbt.toString())).send({ from: this.state.accounts[0] });
 
     await this.state.poolContract.methods.deposit(this.tokenToWei(this.state.depositSbt.toString())).send({ value: this.tokenToWei(this.state.depositEth.toString()), from: this.state.accounts[0] }).on('transactionHash', function () { });
+  
+    window.location.reload(false);
   }
 
 
@@ -347,7 +283,7 @@ class App extends Component {
 
     //await this.state.sbTokenContract.methods.approve(this.state.poolContract.options.address, this.tokenToWei(SBTamount.toString())).send({ from: this.state.accounts[0] });
     await this.state.poolContract.methods.withdrawLiquity(this.state.sliderValue).send({ from: this.state.accounts[0] });
-    this.setState({ withdrawETH: 0, withdrawSBT: 0, withdrawReward: 0, sliderValue: 0 });
+    this.setState({ withdrawETH: 0, withdrawSBT: 0, withdrawReward: 0, sliderValue: 0 }, () => {window.location.reload(false);});
     //this.state.sliderValue = 0;
   }
 
@@ -365,7 +301,7 @@ class App extends Component {
         </nav>
 
         <div className="divBox">
-          <h3><TiSpanner style={{ fontSize: 40, marginTop: -5, transform: "scaleX(-1)" }} /> Set Up Pool</h3>
+          <h3><TiSpanner style={{ fontSize: 40, marginTop: -5, transform: "scaleX(-1)" }} /> Deploy Pool</h3>
           <div class="swapbox" style={{ marginBottom: 10 }}>
 
             <div class="swapbox_select" style={{ marginRight: 20 }}>
@@ -577,17 +513,15 @@ class App extends Component {
 
             <input type="number" class="form-control" placeholder="Amount of Ether" step="0.00001" min="0.0001" style={{ width: "80%" }}
               value={this.state.depositEth} onChange={(e) => {
-                {
-                  if (e.target.value.length <= 6) {
-                    this.setState({ depositEth: e.target.value }, () => { if (this.state.depositEth != 0) { this.checkSbt() } })
-                  } else {
-                    this.setState({ depositSbt: "" })
-                  }
-                }
-
-              }
+                
                   
+                    this.setState({ depositEth: e.target.value }, () => { if (this.state.depositEth != 0) { this.checkSbt() } })
+                  
+                
+
+              }}>
             </input>
+          
           </div>
 
           <HiOutlinePlusCircle style={{ fontSize: 40, marginBottom: -13, marginTop: -10 }} />
@@ -600,13 +534,11 @@ class App extends Component {
 
             <input type="number" class="form-control" placeholder="Amount of SbtToken" step="0.00001" min="0.0001" style={{ width: "80%" }}
               value={this.state.depositSbt} onChange={(e) => {
-                {
-                  if (e.target.value.length <= 6) {
+                
+                  
                     this.setState({ depositSbt: e.target.value }, () => { if (this.state.depositSbt != 0) { this.checkEth() } })
-                  } else {
-                    this.setState({ depositEth: "" })
-                  }
-                }
+                  
+                
               }}>
 
             </input>
@@ -632,8 +564,8 @@ class App extends Component {
         <div className="divBox">
           <h3><BsBoxArrowDown style={{ fontSize: 38, marginTop: -5 }} /> Withdraw</h3>
           <div>Total LP Token Supply: {this.weiToToken(this.state.totalLp.toString())}</div>
-          <div></div>
-          <div>LP details</div>
+          <br />
+          <div><i>Your LP details</i></div>
           <div>LP Token : {this.weiToToken(this.state.lpDetail.lpToken.toString())}</div>
           <div>Available Eth : {this.weiToToken(this.state.lpDetail.providedEth.toString())}</div>
           <div>Available Sbt : {this.weiToToken(this.state.lpDetail.providedSbt.toString())}</div>
