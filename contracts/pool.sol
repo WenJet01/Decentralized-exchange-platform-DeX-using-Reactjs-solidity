@@ -194,9 +194,9 @@ contract pool {
     function getAmountWithdraw(address sender)public view returns(uint lpToken, uint sbtWithdraw, uint ethWithdraw, uint sbtReward){
         lpToken = lp.get(sender);
 
-        sbtWithdraw = (sbtBalance*lpToken)/k;
-        ethWithdraw = (address(this).balance*lpToken)/k;
-        sbtReward = (sbtReserved*lpToken)/k;
+        sbtWithdraw = (sbtBalance*lpToken)/lp.totalSupply();
+        ethWithdraw = (address(this).balance*lpToken)/lp.totalSupply();
+        sbtReward = (sbtReserved*lpToken)/lp.totalSupply();
 
     }
 

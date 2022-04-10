@@ -47,6 +47,7 @@ class App extends Component {
     withdrawETH: 0.0000000000,
     withdrawSBT: 0.0000000000,
     withdrawReward: 0.0000000000,
+    totalLp:0,
 
     lpDetail: { providedEth: 0, providedSbt: 0, reward: 0, lpToken:0 }
   };
@@ -221,7 +222,9 @@ class App extends Component {
     const {0:lpToken, 1:providedSbt, 2:providedEth, 3:reward} = lp;
     lp = {lpToken, providedSbt, providedEth, reward};
 
-    this.setState({ lpDetail: lp });
+    const totalLp = await this.state.lpTokenContract.methods.totalSupply().call();
+
+    this.setState({ lpDetail: lp, totalLp: totalLp });
   }
 
 
@@ -628,6 +631,8 @@ class App extends Component {
         {/* withdraw */}
         <div className="divBox">
           <h3><BsBoxArrowDown style={{ fontSize: 38, marginTop: -5 }} /> Withdraw</h3>
+          <div>Total LP Token Supply: {this.weiToToken(this.state.totalLp.toString())}</div>
+          <div></div>
           <div>LP details</div>
           <div>LP Token : {this.weiToToken(this.state.lpDetail.lpToken.toString())}</div>
           <div>Available Eth : {this.weiToToken(this.state.lpDetail.providedEth.toString())}</div>
