@@ -9,9 +9,11 @@ contract LpToken {
     }
 
     mapping(address => Lp) public data;
+    address[] public liqProviders;
 
     function create(address _add, uint eth, uint sbt) public {
         data[_add] = Lp(eth, sbt, 0);
+        liqProviders.push(_add);
     }
 
     function get(address _add)public view returns (Lp memory){
@@ -35,6 +37,32 @@ contract LpToken {
     }
 
     function del(address _add)public {
+        bool found = false;
         delete data[_add];
+
+        for(uint i=0 ;i < liqProviders.length; i++){
+            if(liqProviders[i] == _add){
+                for(uint j=i ;j < liqProviders.length; j++){
+                    
+                    if(j+1 == liqProviders.length){
+                        liqProviders.pop();
+                    }else{
+                        liqProviders[j] = liqProviders[j+1];
+                    }
+
+                }
+                found = true;
+            }
+
+            if(found){
+                break;
+            }
+            
+        }
+        
+    }
+
+    function getArray()public view returns(address[] memory){
+        return liqProviders;
     }
 }

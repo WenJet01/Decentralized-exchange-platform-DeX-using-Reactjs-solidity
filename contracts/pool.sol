@@ -15,7 +15,7 @@ contract pool {
     uint256 private sbtReserved = 0; //sbt reserved for liquidity provider reward
     bool public isRunning = false;
 
-    uint k;
+    uint public k;
     uint estimateTokenSb;
     uint estimateTokenEth;
     uint public sbtGet =0;
@@ -109,15 +109,25 @@ contract pool {
         lp.minus(msg.sender, withdrawETH, sbtWithdraw);
     }
 
-    function isPoolRunning() public view returns (bool) {
-        return isRunning;
+    function calcReward(uint amount) internal{
+        address[] memory provider = lp.getArray();  
+
+        for(uint i=0 ;i < provider.length; i++){
+            uint providedEth = lp.get(provider[i]).providedEth;
+            uint providedSbt = lp.get(provider[i]).providedSbt;
+            
+            uint reward = (amount * ((providedEth+providedSbt)* 10**18/(sbtBalance+address(this).balance))) / 10**18;
+
+            lp.addReward(provider[i], reward);
+            
+        }
     }
+
+
 
     //swap
     function calculateConstant() internal{
-
-            k = address(this).balance * sbtBalance;
- 
+        k = address(this).balance * sbtBalance;
     }
 
     function getSwapTokenSbEstimate(uint256 _amountTokenEth)
@@ -126,7 +136,7 @@ contract pool {
         returns (uint256, uint256)
     {
         uint tokenEthAfter = address(this).balance + _amountTokenEth;
-        //calculateConstant();
+        
         estimateTokenSb = sbtBalance - (k / tokenEthAfter);
         sbtGet = getActualSbt(estimateTokenSb);
         return (estimateTokenSb, sbtGet);
@@ -138,7 +148,7 @@ contract pool {
         returns (uint256)
     {
         uint256 tokenSbAfter = sbtBalance + getActualSbt(_amountTokenSb);
-        calculateConstant();
+        
         estimateTokenEth = address(this).balance - (k / tokenSbAfter);
         return (estimateTokenEth);
     }
@@ -149,15 +159,15 @@ contract pool {
         returns (uint256, uint256)
     {
         uint256 tokenSbtAfter = sbtBalance - _amountSbt;
-        calculateConstant();
+        
         uint256 ethNeed = (k / tokenSbtAfter) - address(this).balance;
         sbtGet = getActualSbt(_amountSbt);
         return (ethNeed, sbtGet);
     }
 
-    function getSbtNeed(uint256 _amountEth) public checkPool returns (uint256) {
+    function getSbtNeed(uint256 _amountEth) public view checkPool returns (uint256) {
         uint256 tokenEthAfter = address(this).balance - _amountEth;
-        calculateConstant();
+        
         uint256 sbtNeed = (k / tokenEthAfter) - sbtBalance;
         uint256 actual = sbtNeed + getReservedSbt(sbtNeed);
         return (actual);
@@ -168,7 +178,8 @@ contract pool {
         payable
         checkBalance
     {
-        sbtReserved = getReservedSbt(amountSbt);
+        sbtReserved += getReservedSbt(amountSbt);
+        calcReward(getReservedSbt(amountSbt));
         payable(address(this)).transfer(msg.value);
         sbt.transfer(msg.sender, getAmount);
         sbtBalance -= getAmount;
@@ -178,7 +189,8 @@ contract pool {
         public
         checkBalance2(amountSbt)
     {
-        sbtReserved = getReservedSbt(amountSbt);
+        sbtReserved += getReservedSbt(amountSbt);
+        calcReward(getReservedSbt(amountSbt));
         sbt.transferFrom(msg.sender, address(this), amountSbt);
         payable(msg.sender).transfer(amountEth);
         sbtBalance += getActualSbt(amountSbt);

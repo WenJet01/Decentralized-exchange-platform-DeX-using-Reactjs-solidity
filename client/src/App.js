@@ -77,7 +77,7 @@ class App extends Component {
 
     await this.getPoolContract();
 
-
+    alert(await this.state.lpTokenContract.methods.getArray().call());
 
     //await this.checkPoolRunning();
 
