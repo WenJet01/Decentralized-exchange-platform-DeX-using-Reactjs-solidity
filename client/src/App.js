@@ -534,8 +534,16 @@ class App extends Component {
             <span class="input-group-text" id="basic-addon1">ETH</span>
 
             <input type="number" class="form-control" placeholder="Amount of Ether" step="0.00001" min="0.0001"
-              value={this.state.depositEth} onChange={(e) => { this.setState({depositEth: e.target.value}, ()=> { if (this.state.depositEth != 0) { this.checkSbt()}})}}>
+              value={this.state.depositEth} onChange={(e) => { 
+                {
+                  if(e.target.value.length <= 6){
+                      this.setState({depositEth: e.target.value}, ()=> { if (this.state.depositEth != 0) { this.checkSbt()}})
+                  }else{
+                    this.setState({ depositSbt: "" })
+                  }
+                } 
 
+              }}>
 
             </input>
           </div>
@@ -547,7 +555,15 @@ class App extends Component {
             <span class="input-group-text" id="basic-addon1">SBT</span>
 
             <input type="number" class="form-control" placeholder="Amount of SbtToken" step="0.00001" min="0.0001"
-              value={this.state.depositSbt} onChange={(e) => { this.setState({depositSbt: e.target.value}, ()=> { if (this.state.depositSbt != 0) { this.checkEth()}})}}>
+              value={this.state.depositSbt} onChange={(e) => { 
+                {
+                  if(e.target.value.length <= 6){
+                    this.setState({depositSbt: e.target.value}, ()=> { if (this.state.depositSbt != 0) { this.checkEth()}})
+                  }else{
+                    this.setState({ depositEth: "" })
+                  }
+                }
+              }}>
 
             </input>
           </div>
